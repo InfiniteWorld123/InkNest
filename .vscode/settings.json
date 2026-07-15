@@ -1,0 +1,52 @@
+{
+	"files.watcherExclude": {
+		"**/routeTree.gen.ts": true
+	},
+	"files.exclude": {
+		"routeTree.gen.ts": true,
+		"biome.json": true,
+		"bun.lock": true,
+		"cta.json": true,
+		"tsconfig.json": true,
+		"tsr.config.json": true,
+		"vite.config.ts": true,
+		"node_modules": true,
+		".tanstack": true,
+		".gitignore": true,
+		".cta.json": true,
+		"package.json": true,
+		".output": true,
+		"drizzle.config.ts": true,
+		".env": false
+	},
+	"search.exclude": {
+		"**/routeTree.gen.ts": true
+	},
+	"files.readonlyInclude": {
+		"**/routeTree.gen.ts": true
+	},
+	"[javascript]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	},
+	"[javascriptreact]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	},
+	"[typescript]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[typescriptreact]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[json]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	},
+	"[jsonc]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	},
+	"[css]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	},
+	"editor.codeActionsOnSave": {
+		"source.organizeImports.biome": "explicit"
+	}
+}
