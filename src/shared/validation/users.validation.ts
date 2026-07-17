@@ -23,6 +23,7 @@ export const UpdateCurrentUserBodySchema = v.pipe(
 				v.string(),
 				v.trim(),
 				v.minLength(3, "Name must be at least 3 characters long"),
+				v.maxLength(100, "Name must be 100 characters or fewer"),
 			),
 		),
 		username: v.optional(UsernameSchema),
@@ -32,7 +33,9 @@ export const UpdateCurrentUserBodySchema = v.pipe(
 			),
 		),
 		image: v.optional(
-			v.nullable(v.pipe(v.string(), v.url("Image must be a valid URL"))),
+			v.nullable(
+				v.pipe(v.string(), v.trim(), v.url("Image must be a valid URL")),
+			),
 		),
 	}),
 	v.check(

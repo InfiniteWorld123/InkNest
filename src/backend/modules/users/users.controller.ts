@@ -1,36 +1,39 @@
 import type {
-  AuthenticatedUserType,
-  GetUserByUsernameParamsType,
-  UpdateCurrentUserBodyType,
+	AuthenticatedUserType,
+	GetUserByUsernameParamsType,
+	UpdateCurrentUserBodyType,
 } from "#/shared/types/users.type";
 import {
-  getCurrentUserService,
-  getUserByUsernameService,
-  updateCurrentUserService,
+	getCurrentUserService,
+	getUserByUsernameService,
+	updateCurrentUserService,
 } from "./users.service";
 
 export const getCurrentUser = async ({
-  user,
+	user,
 }: {
-  user: AuthenticatedUserType;
+	user: AuthenticatedUserType;
 }) => {
-  return await getCurrentUserService({ user });
+	return getCurrentUserService(user.id);
 };
 
 export const updateCurrentUser = async ({
-  user,
-  body,
+	user,
+	body,
 }: {
-  user: AuthenticatedUserType;
-  body: UpdateCurrentUserBodyType;
+	user: AuthenticatedUserType;
+	body: UpdateCurrentUserBodyType;
 }) => {
-  return updateCurrentUserService({ user, body });
+	return updateCurrentUserService({
+		userId: user.id,
+		body,
+	});
 };
 
 export const getUserByUsername = async ({
-  params,
+	params,
 }: {
-  params: GetUserByUsernameParamsType;
+	params: GetUserByUsernameParamsType;
 }) => {
-  return getUserByUsernameService({ params });
+	return getUserByUsernameService(params.username);
 };

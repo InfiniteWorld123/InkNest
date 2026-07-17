@@ -1,6 +1,4 @@
-Notifications — list notifications, mark one/all as read, delete.
 
-Users — profile lookup and profile update.
 
 Engagement — likes, bookmarks, follows, and post views; several related tables and authentication rules.
 

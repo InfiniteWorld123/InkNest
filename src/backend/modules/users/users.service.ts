@@ -1,18 +1,11 @@
-import { sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { db } from "#/backend/db";
-import { requireFound } from "#/backend/shared/service-utils";
-import type {
-  AuthenticatedUserType,
-  GetUserByUsernameParamsType,
-  UpdateCurrentUserBodyType,
-} from "#/shared/types/users.type";
+import { user } from "#/backend/db/schema/auth";
+import { ensureUpdateBody, requireFound } from "#/backend/shared/service-utils";
+import type { UpdateCurrentUserServiceType } from "#/shared/types/users.type";
 
-export const getCurrentUserService = async ({
-  user,
-}: {
-  user: AuthenticatedUserType;
-}) => {
-  const result = await db.execute(sql`
+export const getCurrentUserService = async (userId: string) => {
+	const result = await db.execute(sql`
 		SELECT
 			id,
 			name,
@@ -24,28 +17,52 @@ export const getCurrentUserService = async ({
 			created_at AS "createdAt",
 			updated_at AS "updatedAt"
 		FROM "user"
-		WHERE id = ${user.id}
+		WHERE id = ${userId}
 	`);
 
-  return requireFound(result.rows[0], "User not found");
+	return requireFound(result.rows[0], "User not found");
 };
 
 export const updateCurrentUserService = async ({
-  user,
-  body,
-}: {
-  user: AuthenticatedUserType;
-  body: UpdateCurrentUserBodyType;
-}) => {
-  user;
-  body;
-  // TODO: Implement service.
+	userId,
+	body,
+}: UpdateCurrentUserServiceType) => {
+	ensureUpdateBody(body);
+
+	const result = await db
+		.update(user)
+		.set({
+			...body,
+			updatedAt: new Date(),
+		})
+		.where(eq(user.id, userId))
+		.returning({
+			id: user.id,
+			name: user.name,
+			username: user.username,
+			email: user.email,
+			emailVerified: user.emailVerified,
+			image: user.image,
+			bio: user.bio,
+			createdAt: user.createdAt,
+			updatedAt: user.updatedAt,
+		});
+
+	return requireFound(result[0], "User not found");
 };
 
-export const getUserByUsernameService = async ({
-  params,
-}: {
-  params: GetUserByUsernameParamsType;
-}) => {
-  // TODO: Implement service.
+export const getUserByUsernameService = async (username: string) => {
+	const result = await db.execute(sql`
+		SELECT
+			id,
+			name,
+			username,
+			image,
+			bio,
+			created_at AS "createdAt"
+		FROM "user"
+		WHERE username = ${username}
+	`);
+
+	return requireFound(result.rows[0], "User not found");
 };
