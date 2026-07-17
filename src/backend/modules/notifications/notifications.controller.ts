@@ -1,15 +1,31 @@
-export const listNotifications = () => {
-	// TODO: Implement controller.
+import type { NotificationIdParamsType } from "#/shared/types/notifications.type";
+import {
+  deleteNotificationService,
+  listNotificationsService,
+  markAllNotificationsReadService,
+  markNotificationReadService,
+} from "./notifications.service";
+
+export const listNotifications = async () => {
+  return listNotificationsService();
 };
 
-export const markNotificationRead = () => {
-	// TODO: Implement controller.
+export const markNotificationRead = async ({
+  params,
+}: {
+  params: NotificationIdParamsType;
+}) => {
+  return markNotificationReadService(params.id);
 };
 
-export const markAllNotificationsRead = () => {
-	// TODO: Implement controller.
+export const markAllNotificationsRead = async () => {
+  return markAllNotificationsReadService();
 };
 
-export const deleteNotification = () => {
-	// TODO: Implement controller.
+export const deleteNotification = async ({
+  params,
+}: {
+  params: NotificationIdParamsType;
+}) => {
+  return deleteNotificationService(params.id);
 };

@@ -1,0 +1,46 @@
+import * as v from "valibot";
+
+export const AuthenticatedUserSchema = v.looseObject({
+	id: v.pipe(v.string(), v.minLength(1, "Authenticated user ID is required")),
+});
+
+export const UsernameSchema = v.pipe(
+	v.string(),
+	v.trim(),
+	v.toLowerCase(),
+	v.minLength(3, "Username must be at least 3 characters long"),
+	v.maxLength(30, "Username must be 30 characters or fewer"),
+	v.regex(
+		/^[a-z0-9](?:[a-z0-9_-]*[a-z0-9])$/,
+		"Username may contain lowercase letters, numbers, underscores, and hyphens",
+	),
+);
+
+export const UpdateCurrentUserBodySchema = v.pipe(
+	v.object({
+		name: v.optional(
+			v.pipe(
+				v.string(),
+				v.trim(),
+				v.minLength(3, "Name must be at least 3 characters long"),
+			),
+		),
+		username: v.optional(UsernameSchema),
+		bio: v.optional(
+			v.nullable(
+				v.pipe(v.string(), v.trim(), v.maxLength(500, "Bio is too long")),
+			),
+		),
+		image: v.optional(
+			v.nullable(v.pipe(v.string(), v.url("Image must be a valid URL"))),
+		),
+	}),
+	v.check(
+		(body) => Object.values(body).some((value) => value !== undefined),
+		"At least one field is required",
+	),
+);
+
+export const GetUserByUsernameParamsSchema = v.object({
+	username: UsernameSchema,
+});

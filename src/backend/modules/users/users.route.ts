@@ -1,4 +1,9 @@
 import { Elysia } from "elysia";
+import { authPlugin } from "#/backend/shared/authPlugin";
+import {
+	GetUserByUsernameParamsSchema,
+	UpdateCurrentUserBodySchema,
+} from "#/shared/validation/users.validation";
 import {
 	getCurrentUser,
 	getUserByUsername,
@@ -6,6 +11,12 @@ import {
 } from "./users.controller";
 
 export const usersRoutes = new Elysia({ prefix: "/users" })
-	.get("/me", getCurrentUser)
-	.patch("/me", updateCurrentUser)
-	.get("/:username", getUserByUsername);
+	.use(authPlugin)
+	.guard({ auth: true }, (app) =>
+		app.get("/me", getCurrentUser).patch("/me", updateCurrentUser, {
+			body: UpdateCurrentUserBodySchema,
+		}),
+	)
+	.get("/:username", getUserByUsername, {
+		params: GetUserByUsernameParamsSchema,
+	});

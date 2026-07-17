@@ -1,5 +1,3 @@
-Taxonomy — tags/categories are simple tables with basic list, lookup, and tag creation.
-
 Notifications — list notifications, mark one/all as read, delete.
 
 Users — profile lookup and profile update.
