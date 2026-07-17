@@ -1,4 +1,5 @@
 import { Elysia } from "elysia";
+import { authPlugin } from "#/backend/shared/authPlugin";
 import {
 	createPost,
 	deletePost,
@@ -9,9 +10,13 @@ import {
 } from "./posts.controller";
 
 export const postsRoutes = new Elysia()
+	.use(authPlugin)
 	.get("/posts", listPosts)
-	.get("/users/me/posts", listCurrentUserPosts)
 	.get("/posts/:slug", getPostBySlug)
-	.post("/posts", createPost)
-	.patch("/posts/:id", updatePost)
-	.delete("/posts/:id", deletePost);
+	.guard({ auth: true }, (app) =>
+		app
+			.get("/users/me/posts", listCurrentUserPosts)
+			.post("/posts", createPost)
+			.patch("/posts/:id", updatePost)
+			.delete("/posts/:id", deletePost),
+	);
