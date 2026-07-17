@@ -8,6 +8,10 @@ import type {
 	VerifyEmailServiceType,
 } from "../../../shared/types/auth.type";
 
+export const getSessionService = () => {
+	// TODO: Implement service.
+};
+
 export const signUpService = async ({ body }: { body: SignUpServiceType }) =>
 	await auth.api.signUpEmail({ body });
 

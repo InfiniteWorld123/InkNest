@@ -9,6 +9,7 @@ import {
 } from "../../../shared/validation/auth.validation";
 import {
 	forgotPassword,
+	getSession,
 	resetPassword,
 	sendVerificationOtp,
 	signIn,
@@ -18,6 +19,7 @@ import {
 } from "./auth.controller";
 
 export const authRoutes = new Elysia({ prefix: "/auth" })
+	.get("/session", getSession)
 	.post("/sign-up", signUp, { body: SignUpSchema })
 	.post("/sign-in", signIn, { body: SignInSchema })
 	.post("/sign-out", signOut)

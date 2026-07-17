@@ -1,37 +1,49 @@
 import { Elysia } from "elysia";
+import { env } from "#/shared/env";
 import { authRoutes } from "./modules/auth/auth.route";
+import { commentsRoutes } from "./modules/comments/comments.route";
+import { engagementRoutes } from "./modules/engagement/engagement.route";
+import { notificationsRoutes } from "./modules/notifications/notifications.route";
+import { postsRoutes } from "./modules/posts/posts.route";
+import { taxonomyRoutes } from "./modules/taxonomy/taxonomy.route";
+import { usersRoutes } from "./modules/users/users.route";
 import { AppError } from "./shared/error";
 import { handleError } from "./shared/error-handler";
 import { HttpStatusCode } from "./shared/http";
 import { responseError } from "./shared/response";
-import { env } from "#/shared/env";
 
 export const app = new Elysia({ prefix: "/api" })
-  .error({ AppError })
-  .onError(handleError)
-  .use(authRoutes)
-  .get("/", `Hello from api ${env.BASE_URL}!`);
+	.error({ AppError })
+	.onError(handleError)
+	.use(authRoutes)
+	.use(usersRoutes)
+	.use(postsRoutes)
+	.use(commentsRoutes)
+	.use(taxonomyRoutes)
+	.use(engagementRoutes)
+	.use(notificationsRoutes)
+	.get("/", `Hello from api ${env.BASE_URL}!`);
 
 export type App = typeof app;
 
 export const handleApiRequest = async (request: Request) => {
-  const response = await app.fetch(request);
+	const response = await app.fetch(request);
 
-  if (response.status !== HttpStatusCode.NOT_FOUND) {
-    return response;
-  }
+	if (response.status !== HttpStatusCode.NOT_FOUND) {
+		return response;
+	}
 
-  const body = await response.clone().text();
+	const body = await response.clone().text();
 
-  if (body.trim() !== "") {
-    return response;
-  }
+	if (body.trim() !== "") {
+		return response;
+	}
 
-  return Response.json(
-    responseError({
-      message: "Route not found",
-      code: "NOT_FOUND",
-    }),
-    { status: HttpStatusCode.NOT_FOUND },
-  );
+	return Response.json(
+		responseError({
+			message: "Route not found",
+			code: "NOT_FOUND",
+		}),
+		{ status: HttpStatusCode.NOT_FOUND },
+	);
 };

@@ -28,6 +28,10 @@ import {
 	verifyEmailService,
 } from "./auth.service";
 
+export const getSession = () => {
+	// TODO: Implement controller.
+};
+
 export const signUp = async ({ body }: { body: SignUpBodyType }) => {
 	const parsedBody = v.parse(SignUpSchema, body);
 	const result = await signUpService({

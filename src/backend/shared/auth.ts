@@ -9,7 +9,7 @@ import {
   PasswordSchema,
 } from "#/shared/validation/auth.validation";
 import { db } from "../db/index";
-import * as schema from "../db/schema";
+import * as schema from "../db/schema/tables";
 import {
   sendAuthCode,
   sendResetPasswordSuccessEmail,
