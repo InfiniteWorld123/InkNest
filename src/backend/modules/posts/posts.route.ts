@@ -1,6 +1,13 @@
 import { Elysia } from "elysia";
 import { authPlugin } from "#/backend/shared/authPlugin";
 import {
+	CreatePostBodySchema,
+	GetPostBySlugParamsSchema,
+	ListPostsQuerySchema,
+	PostIdParamsSchema,
+	UpdatePostBodySchema,
+} from "#/shared/validation/post.validation";
+import {
 	createPost,
 	deletePost,
 	getPostBySlug,
@@ -11,12 +18,19 @@ import {
 
 export const postsRoutes = new Elysia()
 	.use(authPlugin)
-	.get("/posts", listPosts)
-	.get("/posts/:slug", getPostBySlug)
+	.get("/posts", listPosts, { query: ListPostsQuerySchema })
+	.get("/posts/:slug", getPostBySlug, {
+		params: GetPostBySlugParamsSchema,
+	})
 	.guard({ auth: true }, (app) =>
 		app
 			.get("/users/me/posts", listCurrentUserPosts)
-			.post("/posts", createPost)
-			.patch("/posts/:id", updatePost)
-			.delete("/posts/:id", deletePost),
+			.post("/posts", createPost, { body: CreatePostBodySchema })
+			.patch("/posts/:id", updatePost, {
+				params: PostIdParamsSchema,
+				body: UpdatePostBodySchema,
+			})
+			.delete("/posts/:id", deletePost, {
+				params: PostIdParamsSchema,
+			}),
 	);
