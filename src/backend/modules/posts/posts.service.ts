@@ -1,23 +1,50 @@
-export const listPostsService = () => {
-	// TODO: Implement service.
+import { db } from "#/backend/db";
+import { sql } from "drizzle-orm";
+
+export const listPostsService = async () => {
+  const result = await db.execute(sql`
+		
+	`);
+
+  return result.rows;
 };
 
-export const getPostBySlugService = () => {
-	// TODO: Implement service.
+export const getPostBySlugService = async () => {
+  const result = await db.execute(sql`
+		
+	`);
+
+  return result.rows;
 };
 
-export const listCurrentUserPostsService = () => {
-	// TODO: Implement service.
+export const listCurrentUserPostsService = async () => {
+  const result = await db.execute(sql`
+		
+	`);
+
+  return result.rows;
 };
 
-export const createPostService = () => {
-	// TODO: Implement service.
+export const createPostService = async () => {
+  const result = await db.execute(sql`
+		
+	`);
+
+  return result.rows;
 };
 
-export const updatePostService = () => {
-	// TODO: Implement service.
+export const updatePostService = async () => {
+  const result = await db.execute(sql`
+		
+	`);
+
+  return result.rows;
 };
 
-export const deletePostService = () => {
-	// TODO: Implement service.
+export const deletePostService = async () => {
+  const result = await db.execute(sql`
+		
+	`);
+
+  return result.rows;
 };
