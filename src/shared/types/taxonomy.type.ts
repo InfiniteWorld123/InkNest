@@ -1,16 +1,14 @@
 import type * as v from "valibot";
 import type {
-  CreateTagBodySchema,
-  GetCategoryBySlugParamsSchema,
-  GetTagBySlugParamsSchema,
+	CreateTagBodySchema,
+	GetCategoryBySlugParamsSchema,
+	GetTagBySlugParamsSchema,
 } from "../validation/taxonomy.validation";
 
-export type GetTagBySlugParamsType = v.InferOutput<
-  typeof GetTagBySlugParamsSchema
->;
+export type GetTagBySlugParams = v.InferOutput<typeof GetTagBySlugParamsSchema>;
 
-export type CreateTagBodyType = v.InferOutput<typeof CreateTagBodySchema>;
+export type CreateTagBody = v.InferOutput<typeof CreateTagBodySchema>;
 
-export type GetCategoryBySlugParamsType = v.InferOutput<
-  typeof GetCategoryBySlugParamsSchema
+export type GetCategoryBySlugParams = v.InferOutput<
+	typeof GetCategoryBySlugParamsSchema
 >;

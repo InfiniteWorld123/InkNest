@@ -1,11 +1,14 @@
+import { status } from "elysia";
+import { HttpStatusCode } from "#/backend/shared/http";
+import { responseOk } from "#/backend/shared/response";
 import type {
-	CreatePostBodyType,
-	GetPostBySlugParamsType,
-	ListPostsQueryType,
-	PostIdParamsType,
-	UpdatePostBodyType,
+	CreatePostBody,
+	GetPostBySlugParams,
+	ListPostsQuery,
+	PostIdParams,
+	UpdatePostBody,
 } from "#/shared/types/post.type";
-import type { AuthenticatedUserType } from "#/shared/types/users.type";
+import type { AuthenticatedUser } from "#/shared/types/users.type";
 import {
 	createPostService,
 	deletePostService,
@@ -15,34 +18,45 @@ import {
 	updatePostService,
 } from "./posts.service";
 
-export const listPosts = async ({ query }: { query: ListPostsQueryType }) => {
-	return listPostsService(query);
+export const listPosts = async ({ query }: { query: ListPostsQuery }) => {
+	const data = await listPostsService(query);
+
+	return responseOk({ data, message: "Posts retrieved successfully" });
 };
 
 export const getPostBySlug = async ({
 	params,
 }: {
-	params: GetPostBySlugParamsType;
+	params: GetPostBySlugParams;
 }) => {
-	return getPostBySlugService(params);
+	const data = await getPostBySlugService(params);
+
+	return responseOk({ data, message: "Post retrieved successfully" });
 };
 
 export const listCurrentUserPosts = async ({
 	user,
 }: {
-	user: AuthenticatedUserType;
+	user: AuthenticatedUser;
 }) => {
-	return listCurrentUserPostsService(user.id);
+	const data = await listCurrentUserPostsService(user.id);
+
+	return responseOk({ data, message: "Posts retrieved successfully" });
 };
 
 export const createPost = async ({
 	user,
 	body,
 }: {
-	user: AuthenticatedUserType;
-	body: CreatePostBodyType;
+	user: AuthenticatedUser;
+	body: CreatePostBody;
 }) => {
-	return createPostService({ authorId: user.id, body });
+	const data = await createPostService({ authorId: user.id, body });
+
+	return status(
+		HttpStatusCode.CREATED,
+		responseOk({ data, message: "Post created successfully" }),
+	);
 };
 
 export const updatePost = async ({
@@ -50,19 +64,23 @@ export const updatePost = async ({
 	params,
 	body,
 }: {
-	user: AuthenticatedUserType;
-	params: PostIdParamsType;
-	body: UpdatePostBodyType;
+	user: AuthenticatedUser;
+	params: PostIdParams;
+	body: UpdatePostBody;
 }) => {
-	return updatePostService({ authorId: user.id, params, body });
+	const data = await updatePostService({ authorId: user.id, params, body });
+
+	return responseOk({ data, message: "Post updated successfully" });
 };
 
 export const deletePost = async ({
 	user,
 	params,
 }: {
-	user: AuthenticatedUserType;
-	params: PostIdParamsType;
+	user: AuthenticatedUser;
+	params: PostIdParams;
 }) => {
-	return deletePostService({ authorId: user.id, params });
+	const data = await deletePostService({ authorId: user.id, params });
+
+	return responseOk({ data, message: "Post deleted successfully" });
 };

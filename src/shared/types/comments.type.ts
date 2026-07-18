@@ -6,37 +6,10 @@ import type {
 	UpdateCommentBodySchema,
 } from "../validation/comments.validation";
 
-export type PostCommentsParamsType = v.InferOutput<
-	typeof PostCommentsParamsSchema
->;
+export type PostCommentsParams = v.InferOutput<typeof PostCommentsParamsSchema>;
 
-export type CommentIdParamsType = v.InferOutput<typeof CommentIdParamsSchema>;
+export type CommentIdParams = v.InferOutput<typeof CommentIdParamsSchema>;
 
-export type CreateCommentBodyType = v.InferOutput<
-	typeof CreateCommentBodySchema
->;
+export type CreateCommentBody = v.InferOutput<typeof CreateCommentBodySchema>;
 
-export type UpdateCommentBodyType = v.InferOutput<
-	typeof UpdateCommentBodySchema
->;
-
-export type ListPostCommentsServiceType = {
-	params: PostCommentsParamsType;
-};
-
-export type CreateCommentServiceType = {
-	userId: string;
-	params: PostCommentsParamsType;
-	body: CreateCommentBodyType;
-};
-
-export type UpdateCommentServiceType = {
-	userId: string;
-	params: CommentIdParamsType;
-	body: UpdateCommentBodyType;
-};
-
-export type DeleteCommentServiceType = {
-	userId: string;
-	params: CommentIdParamsType;
-};
+export type UpdateCommentBody = v.InferOutput<typeof UpdateCommentBodySchema>;

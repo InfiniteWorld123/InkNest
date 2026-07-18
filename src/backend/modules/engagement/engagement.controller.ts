@@ -1,9 +1,11 @@
+import { status } from "elysia";
+import { HttpStatusCode } from "#/backend/shared/http";
+import { responseOk } from "#/backend/shared/response";
 import type {
-	PostIdParamsType,
-	UserIdParamsType,
-	UsernameParamsType,
+	PostIdParams,
+	UsernameParams,
 } from "#/shared/types/engagement.type";
-import type { AuthenticatedUserType } from "#/shared/types/users.type";
+import type { AuthenticatedUser } from "#/shared/types/users.type";
 import {
 	bookmarkPostService,
 	countPostLikesService,
@@ -23,117 +25,148 @@ import {
 export const listUsersWhoLikedPost = async ({
 	params,
 }: {
-	params: PostIdParamsType;
+	params: PostIdParams;
 }) => {
-	return listUsersWhoLikedPostService({ params });
+	const data = await listUsersWhoLikedPostService({ params });
+
+	return responseOk({ data, message: "Post likes retrieved successfully" });
 };
 
-export const countPostLikes = async ({
-	params,
-}: {
-	params: PostIdParamsType;
-}) => {
-	return countPostLikesService({ params });
+export const countPostLikes = async ({ params }: { params: PostIdParams }) => {
+	const data = await countPostLikesService({ params });
+
+	return responseOk({
+		data,
+		message: "Post like count retrieved successfully",
+	});
 };
 
 export const listCurrentUserLikedPosts = async ({
 	user,
 }: {
-	user: AuthenticatedUserType;
+	user: AuthenticatedUser;
 }) => {
-	return listCurrentUserLikedPostsService(user.id);
+	const data = await listCurrentUserLikedPostsService(user.id);
+
+	return responseOk({ data, message: "Liked posts retrieved successfully" });
 };
 
 export const likePost = async ({
 	user,
 	params,
 }: {
-	user: AuthenticatedUserType;
-	params: PostIdParamsType;
+	user: AuthenticatedUser;
+	params: PostIdParams;
 }) => {
-	return likePostService({ userId: user.id, params });
+	const data = await likePostService({ userId: user.id, params });
+
+	return responseOk({ data, message: "Post liked successfully" });
 };
 
 export const unlikePost = async ({
 	user,
 	params,
 }: {
-	user: AuthenticatedUserType;
-	params: PostIdParamsType;
+	user: AuthenticatedUser;
+	params: PostIdParams;
 }) => {
-	return unlikePostService({ userId: user.id, params });
+	const data = await unlikePostService({ userId: user.id, params });
+
+	return responseOk({ data, message: "Post unliked successfully" });
 };
 
 export const listCurrentUserBookmarks = async ({
 	user,
 }: {
-	user: AuthenticatedUserType;
+	user: AuthenticatedUser;
 }) => {
-	return listCurrentUserBookmarksService(user.id);
+	const data = await listCurrentUserBookmarksService(user.id);
+
+	return responseOk({ data, message: "Bookmarks retrieved successfully" });
 };
 
 export const bookmarkPost = async ({
 	user,
 	params,
 }: {
-	user: AuthenticatedUserType;
-	params: PostIdParamsType;
+	user: AuthenticatedUser;
+	params: PostIdParams;
 }) => {
-	return bookmarkPostService({ userId: user.id, params });
+	const data = await bookmarkPostService({ userId: user.id, params });
+
+	return responseOk({ data, message: "Post bookmarked successfully" });
 };
 
 export const removePostBookmark = async ({
 	user,
 	params,
 }: {
-	user: AuthenticatedUserType;
-	params: PostIdParamsType;
+	user: AuthenticatedUser;
+	params: PostIdParams;
 }) => {
-	return removePostBookmarkService({ userId: user.id, params });
+	const data = await removePostBookmarkService({ userId: user.id, params });
+
+	return responseOk({ data, message: "Bookmark removed successfully" });
 };
 
 export const listUserFollowers = async ({
 	params,
 }: {
-	params: UsernameParamsType;
+	params: UsernameParams;
 }) => {
-	return listUserFollowersService({ params });
+	const data = await listUserFollowersService({ params });
+
+	return responseOk({ data, message: "Followers retrieved successfully" });
 };
 
 export const listUserFollowing = async ({
 	params,
 }: {
-	params: UsernameParamsType;
+	params: UsernameParams;
 }) => {
-	return listUserFollowingService({ params });
+	const data = await listUserFollowingService({ params });
+
+	return responseOk({ data, message: "Following list retrieved successfully" });
 };
 
 export const followUser = async ({
 	user,
 	params,
 }: {
-	user: AuthenticatedUserType;
-	params: UserIdParamsType;
+	user: AuthenticatedUser;
+	params: UsernameParams;
 }) => {
-	return followUserService({ followerId: user.id, params });
+	const data = await followUserService({ followerId: user.id, params });
+
+	return responseOk({ data, message: "User followed successfully" });
 };
 
 export const unfollowUser = async ({
 	user,
 	params,
 }: {
-	user: AuthenticatedUserType;
-	params: UserIdParamsType;
+	user: AuthenticatedUser;
+	params: UsernameParams;
 }) => {
-	return unfollowUserService({ followerId: user.id, params });
+	const data = await unfollowUserService({ followerId: user.id, params });
+
+	return responseOk({ data, message: "User unfollowed successfully" });
 };
 
 export const recordPostView = async ({
 	user,
 	params,
 }: {
-	user?: AuthenticatedUserType | null;
-	params: PostIdParamsType;
+	user?: AuthenticatedUser | null;
+	params: PostIdParams;
 }) => {
-	return recordPostViewService({ userId: user?.id ?? null, params });
+	const data = await recordPostViewService({
+		userId: user?.id ?? null,
+		params,
+	});
+
+	return status(
+		HttpStatusCode.CREATED,
+		responseOk({ data, message: "Post view recorded successfully" }),
+	);
 };

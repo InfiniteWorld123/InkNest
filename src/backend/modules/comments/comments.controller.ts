@@ -1,55 +1,69 @@
+import { status } from "elysia";
+import { HttpStatusCode } from "#/backend/shared/http";
+import { responseOk } from "#/backend/shared/response";
 import type {
-	CommentIdParamsType,
-	CreateCommentBodyType,
-	PostCommentsParamsType,
-	UpdateCommentBodyType,
+  CommentIdParams,
+  CreateCommentBody,
+  PostCommentsParams,
+  UpdateCommentBody,
 } from "#/shared/types/comments.type";
-import type { AuthenticatedUserType } from "#/shared/types/users.type";
+import type { AuthenticatedUser } from "#/shared/types/users.type";
 import {
-	createCommentService,
-	deleteCommentService,
-	listPostCommentsService,
-	updateCommentService,
+  createCommentService,
+  deleteCommentService,
+  listPostCommentsService,
+  updateCommentService,
 } from "./comments.service";
 
 export const listPostComments = async ({
-	params,
+  params,
 }: {
-	params: PostCommentsParamsType;
+  params: PostCommentsParams;
 }) => {
-	return listPostCommentsService({ params });
+  const data = await listPostCommentsService({ params });
+
+  return responseOk({ data, message: "Comments retrieved successfully" });
 };
 
 export const createComment = async ({
-	user,
-	params,
-	body,
+  user,
+  params,
+  body,
 }: {
-	user: AuthenticatedUserType;
-	params: PostCommentsParamsType;
-	body: CreateCommentBodyType;
+  user: AuthenticatedUser;
+  params: PostCommentsParams;
+  body: CreateCommentBody;
 }) => {
-	return createCommentService({ userId: user.id, params, body });
+  const data = await createCommentService({ userId: user.id, params, body });
+
+  return status(
+    HttpStatusCode.CREATED,
+    responseOk({ data, message: "Comment created successfully" }),
+  );
 };
 
 export const updateComment = async ({
-	user,
-	params,
-	body,
+  user,
+  params,
+  body,
 }: {
-	user: AuthenticatedUserType;
-	params: CommentIdParamsType;
-	body: UpdateCommentBodyType;
+  user: AuthenticatedUser;
+  params: CommentIdParams;
+  body: UpdateCommentBody;
 }) => {
-	return updateCommentService({ userId: user.id, params, body });
+  const data = await updateCommentService({ userId: user.id, params, body });
+
+  return responseOk({ data, message: "Comment updated successfully" });
 };
 
 export const deleteComment = async ({
-	user,
-	params,
+  user,
+  params,
 }: {
-	user: AuthenticatedUserType;
-	params: CommentIdParamsType;
+  user: AuthenticatedUser;
+  params: CommentIdParams;
 }) => {
-	return deleteCommentService({ userId: user.id, params });
+  const data = await deleteCommentService({ userId: user.id, params });
+
+  return responseOk({ data, message: "Comment deleted successfully" });
 };

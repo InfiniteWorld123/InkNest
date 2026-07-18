@@ -30,7 +30,7 @@ export const env = {
 
 	EMAIL_FROM:
 		getOptionalEnvVar("EMAIL_FROM") ??
-		"Fullstack-Starter No Reply <query-forge@yamanwarda.dev>",
+		"InkNest No Reply <inknest@yamanwarda.dev>",
 } as const;
 
 export type EnvVariables = typeof env;

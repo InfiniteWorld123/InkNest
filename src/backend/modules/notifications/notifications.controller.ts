@@ -1,31 +1,59 @@
-import type { NotificationIdParamsType } from "#/shared/types/notifications.type";
+import { responseOk } from "#/backend/shared/response";
+import type { NotificationIdParams } from "#/shared/types/notifications.type";
+import type { AuthenticatedUser } from "#/shared/types/users.type";
 import {
-  deleteNotificationService,
-  listNotificationsService,
-  markAllNotificationsReadService,
-  markNotificationReadService,
+	deleteNotificationService,
+	listNotificationsService,
+	markAllNotificationsReadService,
+	markNotificationReadService,
 } from "./notifications.service";
 
-export const listNotifications = async () => {
-  return listNotificationsService();
+export const listNotifications = async ({
+	user,
+}: {
+	user: AuthenticatedUser;
+}) => {
+	const data = await listNotificationsService(user.id);
+
+	return responseOk({ data, message: "Notifications retrieved successfully" });
 };
 
 export const markNotificationRead = async ({
-  params,
+	user,
+	params,
 }: {
-  params: NotificationIdParamsType;
+	user: AuthenticatedUser;
+	params: NotificationIdParams;
 }) => {
-  return markNotificationReadService(params.id);
+	const data = await markNotificationReadService({
+		userId: user.id,
+		notificationId: params.id,
+	});
+
+	return responseOk({ data, message: "Notification marked as read" });
 };
 
-export const markAllNotificationsRead = async () => {
-  return markAllNotificationsReadService();
+export const markAllNotificationsRead = async ({
+	user,
+}: {
+	user: AuthenticatedUser;
+}) => {
+	const data = await markAllNotificationsReadService(user.id);
+
+	return responseOk({ data, message: "All notifications marked as read" });
 };
 
 export const deleteNotification = async ({
-  params,
+	user,
+	params,
 }: {
-  params: NotificationIdParamsType;
+	user: AuthenticatedUser;
+	params: NotificationIdParams;
 }) => {
-  return deleteNotificationService(params.id);
+	const data = await deleteNotificationService({
+		userId: user.id,
+		notificationId: params.id,
+	});
+
+	return responseOk({ data, message: "Notification deleted successfully" });
 };

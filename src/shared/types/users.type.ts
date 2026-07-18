@@ -5,19 +5,12 @@ import type {
 	UpdateCurrentUserBodySchema,
 } from "../validation/users.validation";
 
-export type AuthenticatedUserType = v.InferOutput<
-	typeof AuthenticatedUserSchema
->;
+export type AuthenticatedUser = v.InferOutput<typeof AuthenticatedUserSchema>;
 
-export type UpdateCurrentUserBodyType = v.InferOutput<
+export type UpdateCurrentUserBody = v.InferOutput<
 	typeof UpdateCurrentUserBodySchema
 >;
 
-export type UpdateCurrentUserServiceType = {
-	userId: string;
-	body: UpdateCurrentUserBodyType;
-};
-
-export type GetUserByUsernameParamsType = v.InferOutput<
+export type GetUserByUsernameParams = v.InferOutput<
 	typeof GetUserByUsernameParamsSchema
 >;

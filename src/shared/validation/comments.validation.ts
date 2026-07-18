@@ -1,12 +1,5 @@
 import * as v from "valibot";
-
-const UrlPositiveIntegerSchema = v.pipe(
-	v.string(),
-	v.regex(/^\d+$/, "ID must be a positive integer"),
-	v.toNumber(),
-	v.integer(),
-	v.minValue(1, "ID must be a positive integer"),
-);
+import { PositiveIntegerPathParamSchema } from "./common.validation";
 
 const BodyPositiveIntegerSchema = v.pipe(
 	v.number(),
@@ -22,11 +15,11 @@ const CommentContentSchema = v.pipe(
 );
 
 export const PostCommentsParamsSchema = v.object({
-	postId: UrlPositiveIntegerSchema,
+	postId: PositiveIntegerPathParamSchema,
 });
 
 export const CommentIdParamsSchema = v.object({
-	id: UrlPositiveIntegerSchema,
+	id: PositiveIntegerPathParamSchema,
 });
 
 export const CreateCommentBodySchema = v.object({

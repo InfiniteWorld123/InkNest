@@ -2,7 +2,12 @@ import { eq, sql } from "drizzle-orm";
 import { db } from "#/backend/db";
 import { user } from "#/backend/db/schema/auth";
 import { ensureUpdateBody, requireFound } from "#/backend/shared/service-utils";
-import type { UpdateCurrentUserServiceType } from "#/shared/types/users.type";
+import type { UpdateCurrentUserBody } from "#/shared/types/users.type";
+
+type UpdateCurrentUserInput = {
+	userId: string;
+	body: UpdateCurrentUserBody;
+};
 
 export const getCurrentUserService = async (userId: string) => {
 	const result = await db.execute(sql`
@@ -26,7 +31,7 @@ export const getCurrentUserService = async (userId: string) => {
 export const updateCurrentUserService = async ({
 	userId,
 	body,
-}: UpdateCurrentUserServiceType) => {
+}: UpdateCurrentUserInput) => {
 	ensureUpdateBody(body);
 
 	const result = await db

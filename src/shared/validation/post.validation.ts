@@ -1,21 +1,9 @@
 import * as v from "valibot";
+import {
+	PositiveIntegerPathParamSchema,
+	PositiveIntegerQueryStringSchema,
+} from "./common.validation";
 import { SlugSchema } from "./taxonomy.validation";
-
-const PositiveIntegerParamsSchema = v.pipe(
-	v.string(),
-	v.regex(/^\d+$/, "ID must be a positive integer"),
-	v.toNumber(),
-	v.integer(),
-	v.minValue(1, "ID must be a positive integer"),
-);
-
-const PositiveIntegerQuerySchema = v.pipe(
-	v.string(),
-	v.regex(/^\d+$/, "Value must be a positive integer"),
-	v.toNumber(),
-	v.integer(),
-	v.minValue(1, "Value must be a positive integer"),
-);
 
 const TitleSchema = v.pipe(
 	v.string(),
@@ -64,8 +52,8 @@ export const ListPostsQuerySchema = v.object({
 	tags: v.optional(TagsQuerySchema),
 	sortBy: v.optional(v.picklist(["date", "views", "likes", "bookmarks"])),
 	order: v.optional(v.picklist(["asc", "desc"])),
-	page: v.optional(PositiveIntegerQuerySchema),
-	limit: v.optional(v.pipe(PositiveIntegerQuerySchema, v.maxValue(100))),
+	page: v.optional(PositiveIntegerQueryStringSchema),
+	limit: v.optional(v.pipe(PositiveIntegerQueryStringSchema, v.maxValue(100))),
 });
 
 export const GetPostBySlugParamsSchema = v.object({
@@ -73,7 +61,7 @@ export const GetPostBySlugParamsSchema = v.object({
 });
 
 export const PostIdParamsSchema = v.object({
-	id: PositiveIntegerParamsSchema,
+	postId: PositiveIntegerPathParamSchema,
 });
 
 export const CreatePostBodySchema = v.object({

@@ -3,13 +3,13 @@ import * as v from "valibot";
 import { HttpStatusCode } from "#/backend/shared/http";
 import { responseOk } from "#/backend/shared/response";
 import type {
-	ForgotPasswordBodyType,
-	ResetPasswordBodyType,
-	SendVerificationOtpBodyType,
-	SignInBodyType,
-	SignUpBodyType,
-	VerifyEmailBodyType,
-} from "../../../shared/types/auth.type";
+	ForgotPasswordBody,
+	ResetPasswordBody,
+	SendVerificationOtpBody,
+	SignInBody,
+	SignUpBody,
+	VerifyEmailBody,
+} from "#/shared/types/auth.type";
 import {
 	ForgotPasswordSchema,
 	ResetPasswordSchema,
@@ -17,9 +17,10 @@ import {
 	SignInSchema,
 	SignUpSchema,
 	VerifyEmailSchema,
-} from "../../../shared/validation/auth.validation";
+} from "#/shared/validation/auth.validation";
 import {
 	forgotPasswordService,
+	getSessionService,
 	resetPasswordService,
 	sendVerificationOtpService,
 	signInService,
@@ -28,11 +29,16 @@ import {
 	verifyEmailService,
 } from "./auth.service";
 
-export const getSession = () => {
-	// TODO: Implement controller.
+export const getSession = async ({ request }: { request: Request }) => {
+	const result = await getSessionService({ headers: request.headers });
+
+	return responseOk({
+		data: result,
+		message: "Session retrieved successfully",
+	});
 };
 
-export const signUp = async ({ body }: { body: SignUpBodyType }) => {
+export const signUp = async ({ body }: { body: SignUpBody }) => {
 	const parsedBody = v.parse(SignUpSchema, body);
 	const result = await signUpService({
 		body: {
@@ -48,12 +54,12 @@ export const signUp = async ({ body }: { body: SignUpBodyType }) => {
 		HttpStatusCode.CREATED,
 		responseOk({
 			data: result,
-			message: "Sign up successful",
+			message: "Signed up successfully",
 		}),
 	);
 };
 
-export const signIn = async ({ body }: { body: SignInBodyType }) => {
+export const signIn = async ({ body }: { body: SignInBody }) => {
 	const parsedBody = v.parse(SignInSchema, body);
 	const result = await signInService({ body: parsedBody });
 
@@ -61,7 +67,7 @@ export const signIn = async ({ body }: { body: SignInBodyType }) => {
 		HttpStatusCode.OK,
 		responseOk({
 			data: result,
-			message: "sign in success",
+			message: "Signed in successfully",
 		}),
 	);
 };
@@ -73,7 +79,7 @@ export const signOut = async ({ request }: { request: Request }) => {
 		HttpStatusCode.OK,
 		responseOk({
 			data: result,
-			message: "sign out success",
+			message: "Signed out successfully",
 		}),
 	);
 };
@@ -81,7 +87,7 @@ export const signOut = async ({ request }: { request: Request }) => {
 export const sendVerificationOtp = async ({
 	body,
 }: {
-	body: SendVerificationOtpBodyType;
+	body: SendVerificationOtpBody;
 }) => {
 	const parsedBody = v.parse(SendVerificationOtpSchema, body);
 	const result = await sendVerificationOtpService({ body: parsedBody });
@@ -90,12 +96,12 @@ export const sendVerificationOtp = async ({
 		HttpStatusCode.OK,
 		responseOk({
 			data: result,
-			message: "verification code sent",
+			message: "Verification code sent successfully",
 		}),
 	);
 };
 
-export const verifyEmail = async ({ body }: { body: VerifyEmailBodyType }) => {
+export const verifyEmail = async ({ body }: { body: VerifyEmailBody }) => {
 	const parsedBody = v.parse(VerifyEmailSchema, body);
 	const result = await verifyEmailService({ body: parsedBody });
 
@@ -103,7 +109,7 @@ export const verifyEmail = async ({ body }: { body: VerifyEmailBodyType }) => {
 		HttpStatusCode.OK,
 		responseOk({
 			data: result,
-			message: "email verified",
+			message: "Email verified successfully",
 		}),
 	);
 };
@@ -111,7 +117,7 @@ export const verifyEmail = async ({ body }: { body: VerifyEmailBodyType }) => {
 export const forgotPassword = async ({
 	body,
 }: {
-	body: ForgotPasswordBodyType;
+	body: ForgotPasswordBody;
 }) => {
 	const parsedBody = v.parse(ForgotPasswordSchema, body);
 	const result = await forgotPasswordService({ body: parsedBody });
@@ -120,16 +126,12 @@ export const forgotPassword = async ({
 		HttpStatusCode.OK,
 		responseOk({
 			data: result,
-			message: "password reset code sent",
+			message: "Password reset code sent successfully",
 		}),
 	);
 };
 
-export const resetPassword = async ({
-	body,
-}: {
-	body: ResetPasswordBodyType;
-}) => {
+export const resetPassword = async ({ body }: { body: ResetPasswordBody }) => {
 	const parsedBody = v.parse(ResetPasswordSchema, body);
 	const result = await resetPasswordService({
 		body: {
@@ -143,7 +145,7 @@ export const resetPassword = async ({
 		HttpStatusCode.OK,
 		responseOk({
 			data: result,
-			message: "password reset success",
+			message: "Password reset successfully",
 		}),
 	);
 };

@@ -1,18 +1,18 @@
 import { useMutation } from "@tanstack/react-query";
 import { safe_API } from "#/frontend/routes/api.$";
 import type {
-	ForgotPasswordBodyType,
-	ResetPasswordBodyType,
-	SendVerificationOtpBodyType,
-	SignInBodyType,
-	SignUpBodyType,
-	VerifyEmailBodyType,
+	ForgotPasswordBody,
+	ResetPasswordBody,
+	SendVerificationOtpBody,
+	SignInBody,
+	SignUpBody,
+	VerifyEmailBody,
 } from "#/shared/types/auth.type";
 import { getErrorMessage } from "../utils";
 
 export const signUpMutation = () => {
 	return useMutation({
-		mutationFn: async (body: SignUpBodyType) => {
+		mutationFn: async (body: SignUpBody) => {
 			const result = await safe_API().auth["sign-up"].post(body);
 
 			if (result.error) {
@@ -29,7 +29,7 @@ export const signUpMutation = () => {
 
 export const signInMutation = () => {
 	return useMutation({
-		mutationFn: async (body: SignInBodyType) => {
+		mutationFn: async (body: SignInBody) => {
 			const result = await safe_API().auth["sign-in"].post(body);
 
 			if (result.error) {
@@ -46,7 +46,7 @@ export const signInMutation = () => {
 
 export const verifyEmailMutation = () => {
 	return useMutation({
-		mutationFn: async (body: VerifyEmailBodyType) => {
+		mutationFn: async (body: VerifyEmailBody) => {
 			const result = await safe_API().auth["verify-email"].post(body);
 
 			if (result.error) {
@@ -65,7 +65,7 @@ export const verifyEmailMutation = () => {
 
 export const sendEmailOtpMutation = () => {
 	return useMutation({
-		mutationFn: async (body: SendVerificationOtpBodyType) => {
+		mutationFn: async (body: SendVerificationOtpBody) => {
 			const result = await safe_API().auth["send-verification-otp"].post(body);
 
 			if (result.error) {
@@ -82,7 +82,7 @@ export const sendEmailOtpMutation = () => {
 
 export const forgotPasswordMutation = () => {
 	return useMutation({
-		mutationFn: async (body: ForgotPasswordBodyType) => {
+		mutationFn: async (body: ForgotPasswordBody) => {
 			const result = await safe_API().auth["forgot-password"].post(body);
 
 			if (result.error) {
@@ -101,7 +101,7 @@ export const forgotPasswordMutation = () => {
 
 export const resetPasswordMutation = () => {
 	return useMutation({
-		mutationFn: async (body: ResetPasswordBodyType) => {
+		mutationFn: async (body: ResetPasswordBody) => {
 			const result = await safe_API().auth["reset-password"].post(body);
 
 			if (result.error) {

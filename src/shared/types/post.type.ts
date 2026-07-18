@@ -7,30 +7,14 @@ import type {
 	UpdatePostBodySchema,
 } from "../validation/post.validation";
 
-export type ListPostsQueryType = v.InferOutput<typeof ListPostsQuerySchema>;
+export type ListPostsQuery = v.InferOutput<typeof ListPostsQuerySchema>;
 
-export type GetPostBySlugParamsType = v.InferOutput<
+export type GetPostBySlugParams = v.InferOutput<
 	typeof GetPostBySlugParamsSchema
 >;
 
-export type PostIdParamsType = v.InferOutput<typeof PostIdParamsSchema>;
+export type PostIdParams = v.InferOutput<typeof PostIdParamsSchema>;
 
-export type CreatePostBodyType = v.InferOutput<typeof CreatePostBodySchema>;
+export type CreatePostBody = v.InferOutput<typeof CreatePostBodySchema>;
 
-export type UpdatePostBodyType = v.InferOutput<typeof UpdatePostBodySchema>;
-
-export type CreatePostServiceType = {
-	authorId: string;
-	body: CreatePostBodyType;
-};
-
-export type UpdatePostServiceType = {
-	authorId: string;
-	params: PostIdParamsType;
-	body: UpdatePostBodyType;
-};
-
-export type DeletePostServiceType = {
-	authorId: string;
-	params: PostIdParamsType;
-};
+export type UpdatePostBody = v.InferOutput<typeof UpdatePostBodySchema>;

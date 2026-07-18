@@ -1,22 +1,11 @@
 import * as v from "valibot";
+import { PositiveIntegerPathParamSchema } from "./common.validation";
 import { UsernameSchema } from "./users.validation";
 
-const PositiveIntegerParamsSchema = v.pipe(
-  v.string(),
-  v.regex(/^\d+$/, "ID must be a positive integer"),
-  v.toNumber(),
-  v.integer(),
-  v.minValue(1, "ID must be a positive integer"),
-);
-
 export const PostIdParamsSchema = v.object({
-  postId: PositiveIntegerParamsSchema,
+	postId: PositiveIntegerPathParamSchema,
 });
 
 export const UsernameParamsSchema = v.object({
-  username: UsernameSchema,
-});
-
-export const UserIdParamsSchema = v.object({
-  userId: v.pipe(v.string(), v.trim(), v.minLength(1, "User ID is required")),
+	username: UsernameSchema,
 });

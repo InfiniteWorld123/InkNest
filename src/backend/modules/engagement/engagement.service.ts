@@ -1,21 +1,31 @@
 import { sql } from "drizzle-orm";
 import { db } from "#/backend/db";
 import { badRequestError } from "#/backend/shared/error";
-import { requireCreated } from "#/backend/shared/service-utils";
+import { requireFound } from "#/backend/shared/service-utils";
 import type {
-  CurrentUserPostParamsServiceType,
-  FollowUserServiceType,
-  PostIdParamsType,
-  RecordPostViewServiceType,
-  UsernameParamsType,
+	PostIdParams,
+	UsernameParams,
 } from "#/shared/types/engagement.type";
 
+type CurrentUserPostInput = {
+	userId: string;
+	params: PostIdParams;
+};
+type FollowUserInput = {
+	followerId: string;
+	params: UsernameParams;
+};
+type RecordPostViewInput = {
+	userId: string | null;
+	params: PostIdParams;
+};
+
 export const listUsersWhoLikedPostService = async ({
-  params,
+	params,
 }: {
-  params: PostIdParamsType;
+	params: PostIdParams;
 }) => {
-  const result = await db.execute(sql`
+	const result = await db.execute(sql`
 		SELECT
 			u.id,
 			u.name,
@@ -25,15 +35,18 @@ export const listUsersWhoLikedPostService = async ({
 		FROM likes AS l
 		INNER JOIN "user" AS u
 			ON u.id = l.user_id
+		INNER JOIN posts AS p
+			ON p.id = l.post_id
 		WHERE l.post_id = ${params.postId}
+			AND p.status = 'published'
 		ORDER BY l.created_at DESC
 	`);
 
-  return result.rows;
+	return result.rows;
 };
 
 export const listCurrentUserLikedPostsService = async (userId: string) => {
-  const result = await db.execute(sql`
+	const result = await db.execute(sql`
 		SELECT
 			p.id,
 			p.author_id AS "authorId",
@@ -49,39 +62,43 @@ export const listCurrentUserLikedPostsService = async (userId: string) => {
 		INNER JOIN posts AS p
 			ON p.id = l.post_id
 		WHERE l.user_id = ${userId}
+			AND p.status = 'published'
 		ORDER BY l.created_at DESC
 	`);
 
-  return result.rows;
+	return result.rows;
 };
 
 export const countPostLikesService = async ({
-  params,
+	params,
 }: {
-  params: PostIdParamsType;
+	params: PostIdParams;
 }) => {
-  const result = await db.execute(sql`
+	const result = await db.execute(sql`
 		SELECT COUNT(*)::integer AS count
-		FROM likes
-		WHERE post_id = ${params.postId}
+		FROM likes AS l
+		INNER JOIN posts AS p
+			ON p.id = l.post_id
+		WHERE l.post_id = ${params.postId}
+			AND p.status = 'published'
 	`);
 
-  return result.rows[0];
+	return result.rows[0];
 };
 
 export const likePostService = async ({
-  userId,
-  params,
-}: CurrentUserPostParamsServiceType) => {
-  const result = await db.execute(sql`
+	userId,
+	params,
+}: CurrentUserPostInput) => {
+	const result = await db.execute(sql`
 		INSERT INTO likes (
 			user_id,
 			post_id
 		)
-		VALUES (
-			${userId},
-			${params.postId}
-		)
+		SELECT ${userId}, p.id
+		FROM posts AS p
+		WHERE p.id = ${params.postId}
+			AND p.status = 'published'
 		ON CONFLICT (user_id, post_id)
 		DO UPDATE SET
 			user_id = EXCLUDED.user_id
@@ -91,14 +108,14 @@ export const likePostService = async ({
 			created_at AS "createdAt"
 	`);
 
-  return requireCreated(result.rows[0], "Like could not be created");
+	return requireFound(result.rows[0], "Post not found");
 };
 
 export const unlikePostService = async ({
-  userId,
-  params,
-}: CurrentUserPostParamsServiceType) => {
-  const result = await db.execute(sql`
+	userId,
+	params,
+}: CurrentUserPostInput) => {
+	const result = await db.execute(sql`
 		DELETE FROM likes
 		WHERE user_id = ${userId}
 			AND post_id = ${params.postId}
@@ -107,11 +124,11 @@ export const unlikePostService = async ({
 			post_id AS "postId"
 	`);
 
-  return result.rows[0] ?? null;
+	return result.rows[0] ?? null;
 };
 
 export const listCurrentUserBookmarksService = async (userId: string) => {
-  const result = await db.execute(sql`
+	const result = await db.execute(sql`
 		SELECT
 			p.id,
 			p.author_id AS "authorId",
@@ -127,25 +144,26 @@ export const listCurrentUserBookmarksService = async (userId: string) => {
 		INNER JOIN posts AS p
 			ON p.id = b.post_id
 		WHERE b.user_id = ${userId}
+			AND p.status = 'published'
 		ORDER BY b.created_at DESC
 	`);
 
-  return result.rows;
+	return result.rows;
 };
 
 export const bookmarkPostService = async ({
-  userId,
-  params,
-}: CurrentUserPostParamsServiceType) => {
-  const result = await db.execute(sql`
+	userId,
+	params,
+}: CurrentUserPostInput) => {
+	const result = await db.execute(sql`
 		INSERT INTO bookmarks (
 			user_id,
 			post_id
 		)
-		VALUES (
-			${userId},
-			${params.postId}
-		)
+		SELECT ${userId}, p.id
+		FROM posts AS p
+		WHERE p.id = ${params.postId}
+			AND p.status = 'published'
 		ON CONFLICT (user_id, post_id)
 		DO UPDATE SET
 			user_id = EXCLUDED.user_id
@@ -155,14 +173,14 @@ export const bookmarkPostService = async ({
 			created_at AS "createdAt"
 	`);
 
-  return requireCreated(result.rows[0], "Bookmark could not be created");
+	return requireFound(result.rows[0], "Post not found");
 };
 
 export const removePostBookmarkService = async ({
-  userId,
-  params,
-}: CurrentUserPostParamsServiceType) => {
-  const result = await db.execute(sql`
+	userId,
+	params,
+}: CurrentUserPostInput) => {
+	const result = await db.execute(sql`
 		  DELETE FROM bookmarks
 		  WHERE user_id = ${userId}
 			  AND post_id = ${params.postId}
@@ -171,15 +189,15 @@ export const removePostBookmarkService = async ({
 			  post_id AS "postId"
 	  `);
 
-  return result.rows[0] ?? null;
+	return result.rows[0] ?? null;
 };
 
 export const listUserFollowersService = async ({
-  params,
+	params,
 }: {
-  params: UsernameParamsType;
+	params: UsernameParams;
 }) => {
-  const result = await db.execute(sql`
+	const result = await db.execute(sql`
 		SELECT
 			follower.id,
 			follower.name,
@@ -195,15 +213,15 @@ export const listUserFollowersService = async ({
 		ORDER BY follower.name ASC
 	`);
 
-  return result.rows;
+	return result.rows;
 };
 
 export const listUserFollowingService = async ({
-  params,
+	params,
 }: {
-  params: UsernameParamsType;
+	params: UsernameParams;
 }) => {
-  const result = await db.execute(sql`
+	const result = await db.execute(sql`
 		SELECT
 			followed.id,
 			followed.name,
@@ -219,28 +237,35 @@ export const listUserFollowingService = async ({
 		ORDER BY followed.name ASC
 	`);
 
-  return result.rows;
+	return result.rows;
 };
 
 export const followUserService = async ({
-  followerId,
-  params,
-}: FollowUserServiceType) => {
-  const followingId = params.userId;
+	followerId,
+	params,
+}: FollowUserInput) => {
+	const targetResult = await db.execute(sql`
+		SELECT id
+		FROM "user"
+		WHERE username = ${params.username}
+	`);
+	const target = requireFound(targetResult.rows[0], "User not found") as {
+		id: string;
+	};
+	const followingId = target.id;
 
-  if (followerId === followingId) {
-    throw badRequestError("You cannot follow yourself");
-  }
+	if (followerId === followingId) {
+		throw badRequestError("You cannot follow yourself");
+	}
 
-  const result = await db.execute(sql`
+	const result = await db.execute(sql`
 		  INSERT INTO follows (
 			  follower_id,
 			  following_id
 		  )
-		  VALUES (
-			  ${followerId},
-			  ${followingId}
-		  )
+		SELECT ${followerId}, target.id
+		FROM "user" AS target
+		WHERE target.id = ${followingId}
 		  ON CONFLICT (follower_id, following_id)
 		  DO UPDATE SET
 			  follower_id = EXCLUDED.follower_id
@@ -250,39 +275,48 @@ export const followUserService = async ({
 			  created_at AS "createdAt"
 	  `);
 
-  return requireCreated(result.rows[0], "Follow could not be created");
+	return requireFound(result.rows[0], "User not found");
 };
 
 export const unfollowUserService = async ({
-  followerId,
-  params,
-}: FollowUserServiceType) => {
-  const result = await db.execute(sql`
+	followerId,
+	params,
+}: FollowUserInput) => {
+	const targetResult = await db.execute(sql`
+		SELECT id
+		FROM "user"
+		WHERE username = ${params.username}
+	`);
+	const target = requireFound(targetResult.rows[0], "User not found") as {
+		id: string;
+	};
+
+	const result = await db.execute(sql`
 		DELETE FROM follows
 		WHERE
 			follower_id = ${followerId}
-			AND following_id = ${params.userId}
+			AND following_id = ${target.id}
 		RETURNING
 			follower_id AS "followerId",
 			following_id AS "followingId"
 	`);
 
-  return result.rows[0] ?? null;
+	return result.rows[0] ?? null;
 };
 
 export const recordPostViewService = async ({
-  userId,
-  params,
-}: RecordPostViewServiceType) => {
-  const result = await db.execute(sql`
+	userId,
+	params,
+}: RecordPostViewInput) => {
+	const result = await db.execute(sql`
 		INSERT INTO post_views (
 			user_id,
 			post_id
 		)
-		VALUES (
-			${userId},
-			${params.postId}
-		)
+		SELECT ${userId}, p.id
+		FROM posts AS p
+		WHERE p.id = ${params.postId}
+			AND p.status = 'published'
 		RETURNING
 			id,
 			user_id AS "userId",
@@ -290,5 +324,5 @@ export const recordPostViewService = async ({
 			viewed_at AS "viewedAt"
 	`);
 
-  return requireCreated(result.rows[0], "Post view could not be recorded");
+	return requireFound(result.rows[0], "Post not found");
 };

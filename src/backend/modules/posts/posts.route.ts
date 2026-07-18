@@ -19,18 +19,18 @@ import {
 export const postsRoutes = new Elysia()
 	.use(authPlugin)
 	.get("/posts", listPosts, { query: ListPostsQuerySchema })
-	.get("/posts/:slug", getPostBySlug, {
+	.get("/posts/by-slug/:slug", getPostBySlug, {
 		params: GetPostBySlugParamsSchema,
 	})
 	.guard({ auth: true }, (app) =>
 		app
 			.get("/users/me/posts", listCurrentUserPosts)
 			.post("/posts", createPost, { body: CreatePostBodySchema })
-			.patch("/posts/:id", updatePost, {
+			.patch("/posts/:postId", updatePost, {
 				params: PostIdParamsSchema,
 				body: UpdatePostBodySchema,
 			})
-			.delete("/posts/:id", deletePost, {
+			.delete("/posts/:postId", deletePost, {
 				params: PostIdParamsSchema,
 			}),
 	);

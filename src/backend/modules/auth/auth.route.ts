@@ -6,7 +6,7 @@ import {
 	SignInSchema,
 	SignUpSchema,
 	VerifyEmailSchema,
-} from "../../../shared/validation/auth.validation";
+} from "#/shared/validation/auth.validation";
 import {
 	forgotPassword,
 	getSession,

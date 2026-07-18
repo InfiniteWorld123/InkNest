@@ -1,39 +1,42 @@
+import { responseOk } from "#/backend/shared/response";
 import type {
-  AuthenticatedUserType,
-  GetUserByUsernameParamsType,
-  UpdateCurrentUserBodyType,
+	AuthenticatedUser,
+	GetUserByUsernameParams,
+	UpdateCurrentUserBody,
 } from "#/shared/types/users.type";
 import {
-  getCurrentUserService,
-  getUserByUsernameService,
-  updateCurrentUserService,
+	getCurrentUserService,
+	getUserByUsernameService,
+	updateCurrentUserService,
 } from "./users.service";
 
-export const getCurrentUser = async ({
-  user,
-}: {
-  user: AuthenticatedUserType;
-}) => {
-  return getCurrentUserService(user.id);
+export const getCurrentUser = async ({ user }: { user: AuthenticatedUser }) => {
+	const data = await getCurrentUserService(user.id);
+
+	return responseOk({ data, message: "User retrieved successfully" });
 };
 
 export const updateCurrentUser = async ({
-  user,
-  body,
+	user,
+	body,
 }: {
-  user: AuthenticatedUserType;
-  body: UpdateCurrentUserBodyType;
+	user: AuthenticatedUser;
+	body: UpdateCurrentUserBody;
 }) => {
-  return updateCurrentUserService({
-    userId: user.id,
-    body,
-  });
+	const data = await updateCurrentUserService({
+		userId: user.id,
+		body,
+	});
+
+	return responseOk({ data, message: "User updated successfully" });
 };
 
 export const getUserByUsername = async ({
-  params,
+	params,
 }: {
-  params: GetUserByUsernameParamsType;
+	params: GetUserByUsernameParams;
 }) => {
-  return getUserByUsernameService(params.username);
+	const data = await getUserByUsernameService(params.username);
+
+	return responseOk({ data, message: "User retrieved successfully" });
 };

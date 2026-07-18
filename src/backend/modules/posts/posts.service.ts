@@ -7,12 +7,26 @@ import {
 	requireFound,
 } from "#/backend/shared/service-utils";
 import type {
-	CreatePostServiceType,
-	DeletePostServiceType,
-	GetPostBySlugParamsType,
-	ListPostsQueryType,
-	UpdatePostServiceType,
+	CreatePostBody,
+	GetPostBySlugParams,
+	ListPostsQuery,
+	PostIdParams,
+	UpdatePostBody,
 } from "#/shared/types/post.type";
+
+type CreatePostInput = {
+	authorId: string;
+	body: CreatePostBody;
+};
+type UpdatePostInput = {
+	authorId: string;
+	params: PostIdParams;
+	body: UpdatePostBody;
+};
+type DeletePostInput = {
+	authorId: string;
+	params: PostIdParams;
+};
 
 const postReturningFields = {
 	id: posts.id,
@@ -34,7 +48,7 @@ export const listPostsService = async ({
 	order = "desc",
 	page = 1,
 	limit = 10,
-}: ListPostsQueryType) => {
+}: ListPostsQuery) => {
 	const offset = (page - 1) * limit;
 	const conditions: SQL[] = [sql`p.status = 'published'`];
 	const filterJoins: SQL[] = [];
@@ -70,7 +84,7 @@ export const listPostsService = async ({
 		conditions.push(sql`tag.slug IN (${sql.join(tagValues, sql`, `)})`);
 	}
 
-	const sortColumns: Record<NonNullable<ListPostsQueryType["sortBy"]>, SQL> = {
+	const sortColumns: Record<NonNullable<ListPostsQuery["sortBy"]>, SQL> = {
 		date: sql`p.published_at`,
 		views: sql`"viewsCount"`,
 		likes: sql`"likesCount"`,
@@ -114,7 +128,7 @@ export const listPostsService = async ({
 	return result.rows;
 };
 
-export const getPostBySlugService = async (params: GetPostBySlugParamsType) => {
+export const getPostBySlugService = async (params: GetPostBySlugParams) => {
 	const result = await db.execute(sql`
 		SELECT
 			p.id,
@@ -171,10 +185,14 @@ export const listCurrentUserPostsService = async (authorId: string) => {
 export const createPostService = async ({
 	authorId,
 	body,
-}: CreatePostServiceType) => {
+}: CreatePostInput) => {
+	const publishedAt =
+		body.status === "published" && body.publishedAt == null
+			? new Date()
+			: body.publishedAt;
 	const result = await db
 		.insert(posts)
-		.values({ authorId, ...body })
+		.values({ authorId, ...body, publishedAt })
 		.returning(postReturningFields);
 
 	return requireCreated(result[0], "Post could not be created");
@@ -184,13 +202,20 @@ export const updatePostService = async ({
 	authorId,
 	params,
 	body,
-}: UpdatePostServiceType) => {
+}: UpdatePostInput) => {
 	ensureUpdateBody(body);
 
 	const result = await db
 		.update(posts)
-		.set({ ...body, updatedAt: new Date() })
-		.where(and(eq(posts.id, params.id), eq(posts.authorId, authorId)))
+		.set({
+			...body,
+			publishedAt:
+				body.status === "published" && body.publishedAt == null
+					? sql`COALESCE(${posts.publishedAt}, NOW())`
+					: body.publishedAt,
+			updatedAt: new Date(),
+		})
+		.where(and(eq(posts.id, params.postId), eq(posts.authorId, authorId)))
 		.returning(postReturningFields);
 
 	return requireFound(result[0], "Post not found");
@@ -199,10 +224,10 @@ export const updatePostService = async ({
 export const deletePostService = async ({
 	authorId,
 	params,
-}: DeletePostServiceType) => {
+}: DeletePostInput) => {
 	const result = await db
 		.delete(posts)
-		.where(and(eq(posts.id, params.id), eq(posts.authorId, authorId)))
+		.where(and(eq(posts.id, params.postId), eq(posts.authorId, authorId)))
 		.returning({ id: posts.id, slug: posts.slug });
 
 	return requireFound(result[0], "Post not found");
