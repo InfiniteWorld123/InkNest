@@ -15,7 +15,8 @@
 			"**/vitest.config.ts",
 			"!**/src/frontend/config/routeTree.gen.ts",
 			"!**/src/backend/db/migrations",
-			"!**/src/styles.css"
+			"!**/src/styles.css",
+			"!**/src/frontend/config/styles.css"
 		]
 	},
 	"formatter": {
