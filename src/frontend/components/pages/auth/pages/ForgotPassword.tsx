@@ -1,17 +1,26 @@
+import { useForm } from "@tanstack/react-form";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, KeyRound } from "lucide-react";
-import type { FormEvent } from "react";
 import {
 	AuthShell,
 	authLinkClass,
 } from "#/frontend/components/pages/auth/sections/AuthShell";
 import { Button } from "#/frontend/components/shared/ui/Button";
 import { TextField } from "#/frontend/components/shared/ui/TextField";
+import { ForgotPasswordSchema } from "#/shared/validation/auth.validation";
 
 export function ForgotPassword() {
-	function handleSubmit(e: FormEvent<HTMLFormElement>) {
-		e.preventDefault();
-	}
+	const form = useForm({
+		defaultValues: {
+			email: "",
+		},
+		validators: {
+			onChange: ForgotPasswordSchema,
+		},
+		onSubmit: async ({ value }) => {
+			console.log(value);
+		},
+	});
 
 	return (
 		<AuthShell
@@ -32,14 +41,33 @@ export function ForgotPassword() {
 				</span>
 			</div>
 
-			<form onSubmit={handleSubmit} className="flex flex-col gap-5">
-				<TextField
-					label="Email"
-					name="email"
-					type="email"
-					autoComplete="email"
-					placeholder="you@example.com"
-				/>
+			<form
+				onSubmit={(e) => {
+					e.preventDefault();
+					e.stopPropagation();
+					form.handleSubmit();
+				}}
+				className="flex flex-col gap-5"
+			>
+				<form.Field name="email">
+					{(field) => (
+						<TextField
+							label="Email"
+							name={field.name}
+							type="email"
+							autoComplete="email"
+							placeholder="you@example.com"
+							value={field.state.value}
+							onChange={(e) => field.handleChange(e.target.value)}
+							onBlur={field.handleBlur}
+							errors={
+								field.state.meta.isTouched
+									? field.state.meta.errors.map((error) => error?.message)
+									: []
+							}
+						/>
+					)}
+				</form.Field>
 				<Button type="submit" fullWidth>
 					Send reset code
 				</Button>

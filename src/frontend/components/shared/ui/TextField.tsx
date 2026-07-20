@@ -4,14 +4,19 @@ import { type InputHTMLAttributes, useId, useState } from "react";
 interface TextFieldProps extends InputHTMLAttributes<HTMLInputElement> {
 	label: string;
 	hint?: string;
+	errors?: Array<string | undefined>;
 }
 
 const inputBase =
 	"h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 text-sm text-slate-900 placeholder:text-slate-400 transition-colors focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-500/30 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500";
 
+const inputError =
+	"border-red-400 focus:border-red-500 focus:ring-red-500/30 dark:border-red-500/70";
+
 export function TextField({
 	label,
 	hint,
+	errors = [],
 	type = "text",
 	className = "",
 	id,
@@ -22,6 +27,10 @@ export function TextField({
 	const isPassword = type === "password";
 	const [show, setShow] = useState(false);
 	const resolvedType = isPassword && show ? "text" : type;
+	const messages = errors.filter((message): message is string =>
+		Boolean(message),
+	);
+	const hasError = messages.length > 0;
 
 	return (
 		<div className="flex flex-col gap-1.5">
@@ -35,7 +44,8 @@ export function TextField({
 				<input
 					id={fieldId}
 					type={resolvedType}
-					className={`${inputBase} ${isPassword ? "pr-11" : ""} ${className}`}
+					aria-invalid={hasError}
+					className={`${inputBase} ${hasError ? inputError : ""} ${isPassword ? "pr-11" : ""} ${className}`}
 					{...props}
 				/>
 				{isPassword ? (
@@ -49,7 +59,9 @@ export function TextField({
 					</button>
 				) : null}
 			</div>
-			{hint ? (
+			{hasError ? (
+				<p className="text-xs text-red-600 dark:text-red-400">{messages[0]}</p>
+			) : hint ? (
 				<p className="text-xs text-slate-500 dark:text-slate-400">{hint}</p>
 			) : null}
 		</div>
