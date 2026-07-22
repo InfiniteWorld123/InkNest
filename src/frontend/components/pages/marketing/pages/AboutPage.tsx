@@ -1,6 +1,6 @@
+import { buttonVariants, Card } from "@heroui/react";
 import { Link } from "@tanstack/react-router";
 import { Compass, Heart, Shield, Sparkles } from "lucide-react";
-import { Button } from "#/frontend/components/shared/ui/Button";
 
 const values = [
 	{
@@ -81,28 +81,28 @@ export function AboutPage() {
 
 				<div className="mt-14 grid gap-6 sm:grid-cols-2">
 					{values.map((value) => (
-						<div
-							key={value.title}
-							className="flex gap-4 rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900"
-						>
-							<span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent-50 text-accent-600 dark:bg-accent-500/10 dark:text-accent-400">
-								<value.icon size={20} />
-							</span>
-							<div>
-								<h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-									{value.title}
-								</h3>
-								<p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-									{value.body}
-								</p>
-							</div>
-						</div>
+						<Card key={value.title} className="p-6">
+							<Card.Content className="flex gap-4 p-0">
+								<span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent-50 text-accent-600 dark:bg-accent-500/10 dark:text-accent-400">
+									<value.icon size={20} />
+								</span>
+								<div>
+									<Card.Title>{value.title}</Card.Title>
+									<Card.Description className="mt-1">
+										{value.body}
+									</Card.Description>
+								</div>
+							</Card.Content>
+						</Card>
 					))}
 				</div>
 
 				<div className="mt-16 text-center">
-					<Link to="/sign-up">
-						<Button size="lg">Join InkNest</Button>
+					<Link
+						to="/sign-up"
+						className={buttonVariants({ variant: "primary", size: "lg" })}
+					>
+						Join InkNest
 					</Link>
 				</div>
 			</section>

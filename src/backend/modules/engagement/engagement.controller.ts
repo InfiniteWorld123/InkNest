@@ -10,6 +10,7 @@ import {
 	bookmarkPostService,
 	countPostLikesService,
 	followUserService,
+	getPostViewerEngagementService,
 	likePostService,
 	listCurrentUserBookmarksService,
 	listCurrentUserLikedPostsService,
@@ -38,6 +39,24 @@ export const countPostLikes = async ({ params }: { params: PostIdParams }) => {
 	return responseOk({
 		data,
 		message: "Post like count retrieved successfully",
+	});
+};
+
+export const getPostViewerEngagement = async ({
+	user,
+	params,
+}: {
+	user?: AuthenticatedUser | null;
+	params: PostIdParams;
+}) => {
+	const data = await getPostViewerEngagementService({
+		userId: user?.id ?? null,
+		params,
+	});
+
+	return responseOk({
+		data,
+		message: "Post engagement retrieved successfully",
 	});
 };
 

@@ -1,5 +1,8 @@
 import * as v from "valibot";
-import { PositiveIntegerPathParamSchema } from "./common.validation";
+import {
+	PositiveIntegerPathParamSchema,
+	PositiveIntegerQueryStringSchema,
+} from "./common.validation";
 
 const BodyPositiveIntegerSchema = v.pipe(
 	v.number(),
@@ -16,6 +19,11 @@ const CommentContentSchema = v.pipe(
 
 export const PostCommentsParamsSchema = v.object({
 	postId: PositiveIntegerPathParamSchema,
+});
+
+export const ListPostCommentsQuerySchema = v.object({
+	cursor: v.optional(PositiveIntegerQueryStringSchema),
+	limit: v.optional(v.pipe(PositiveIntegerQueryStringSchema, v.maxValue(50))),
 });
 
 export const CommentIdParamsSchema = v.object({

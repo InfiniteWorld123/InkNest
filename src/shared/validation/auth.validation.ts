@@ -28,7 +28,7 @@ const CallbackUrlSchema = v.optional(
 	v.pipe(v.string(), v.url("Callback URL must be a valid URL")),
 );
 
-const OtpSchema = v.pipe(
+export const VerificationCodeSchema = v.pipe(
 	v.string(),
 	v.trim(),
 	v.regex(/^\d{6}$/, "Verification code must be 6 digits"),
@@ -75,7 +75,7 @@ export const SendVerificationOtpSchema = v.object({
 
 export const VerifyEmailSchema = v.object({
 	email: EmailSchema,
-	otp: OtpSchema,
+	otp: VerificationCodeSchema,
 });
 
 export const ForgotPasswordSchema = v.object({
@@ -85,7 +85,7 @@ export const ForgotPasswordSchema = v.object({
 export const ResetPasswordSchema = v.pipe(
 	v.object({
 		email: EmailSchema,
-		otp: OtpSchema,
+		otp: VerificationCodeSchema,
 		newPassword: PasswordSchema,
 		confirmPassword: v.string(),
 	}),

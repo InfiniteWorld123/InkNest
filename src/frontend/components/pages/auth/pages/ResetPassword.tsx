@@ -1,50 +1,63 @@
+import { Button, Form } from "@heroui/react";
 import { useForm } from "@tanstack/react-form";
-import { Link } from "@tanstack/react-router";
-import * as v from "valibot";
+import { getRouteApi, Link, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
+import { useResetPasswordMutation } from "#/frontend/api/queries/auth.query";
+import { getCaughtErrorMessage } from "#/frontend/api/utils";
+import { AuthMessage } from "#/frontend/components/pages/auth/sections/AuthMessage";
 import {
 	AuthShell,
 	authLinkClass,
 } from "#/frontend/components/pages/auth/sections/AuthShell";
-import { Button } from "#/frontend/components/shared/ui/Button";
+import { OtpInput } from "#/frontend/components/shared/ui/OtpInput";
 import { TextField } from "#/frontend/components/shared/ui/TextField";
-import { PasswordSchema } from "#/shared/validation/auth.validation";
+import { ResetPasswordSchema } from "#/shared/validation/auth.validation";
 
-const ResetPasswordFormSchema = v.pipe(
-	v.object({
-		newPassword: PasswordSchema,
-		confirmPassword: v.pipe(
-			v.string(),
-			v.minLength(1, "Password confirmation is required"),
-		),
-	}),
-	v.forward(
-		v.partialCheck(
-			[["newPassword"], ["confirmPassword"]],
-			(input) => input.newPassword === input.confirmPassword,
-			"Passwords do not match",
-		),
-		["confirmPassword"],
-	),
-);
+const resetPasswordRoute = getRouteApi("/_auth/reset-password");
 
 export function ResetPassword() {
+	const search = resetPasswordRoute.useSearch();
+	const navigate = useNavigate();
+	const resetPassword = useResetPasswordMutation();
+	const [submissionError, setSubmissionError] = useState<string | null>(null);
 	const form = useForm({
 		defaultValues: {
+			email: search.email ?? "",
+			otp: "",
 			newPassword: "",
 			confirmPassword: "",
 		},
 		validators: {
-			onChange: ResetPasswordFormSchema,
+			onChange: ResetPasswordSchema,
 		},
 		onSubmit: async ({ value }) => {
-			console.log(value);
+			setSubmissionError(null);
+
+			try {
+				await resetPassword.mutateAsync(value);
+				await navigate({
+					to: "/sign-in",
+					search: { email: value.email, notice: "password-reset" },
+				});
+			} catch (error) {
+				setSubmissionError(
+					getCaughtErrorMessage(
+						error,
+						"Unable to reset your password. Check the code and try again.",
+					),
+				);
+			}
 		},
 	});
 
 	return (
 		<AuthShell
 			title="Reset your password"
-			subtitle="Enter the code we emailed you and choose a new password."
+			subtitle={
+				search.email
+					? `Enter the code sent to ${search.email} and choose a new password.`
+					: "Request a reset code first so we know which account to update."
+			}
 			footer={
 				<>
 					Remembered it?{" "}
@@ -54,7 +67,14 @@ export function ResetPassword() {
 				</>
 			}
 		>
-			<form
+			{submissionError ? (
+				<AuthMessage
+					status="danger"
+					title="Password reset failed"
+					message={submissionError}
+				/>
+			) : null}
+			<Form
 				onSubmit={(e) => {
 					e.preventDefault();
 					e.stopPropagation();
@@ -62,6 +82,20 @@ export function ResetPassword() {
 				}}
 				className="flex flex-col gap-5"
 			>
+				<form.Field name="otp">
+					{(field) => (
+						<OtpInput
+							value={field.state.value}
+							onChange={(value) => field.handleChange(value)}
+							onBlur={field.handleBlur}
+							errors={
+								field.state.meta.isTouched
+									? field.state.meta.errors.map((error) => error?.message)
+									: []
+							}
+						/>
+					)}
+				</form.Field>
 				<form.Field name="newPassword">
 					{(field) => (
 						<TextField
@@ -101,10 +135,15 @@ export function ResetPassword() {
 						/>
 					)}
 				</form.Field>
-				<Button type="submit" fullWidth>
-					Reset password
+				<Button
+					type="submit"
+					fullWidth
+					isDisabled={!search.email || resetPassword.isPending}
+					isPending={resetPassword.isPending}
+				>
+					{resetPassword.isPending ? "Resetting password…" : "Reset password"}
 				</Button>
-			</form>
+			</Form>
 		</AuthShell>
 	);
 }

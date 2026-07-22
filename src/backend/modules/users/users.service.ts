@@ -2,7 +2,10 @@ import { eq, sql } from "drizzle-orm";
 import { db } from "#/backend/db";
 import { user } from "#/backend/db/schema/auth";
 import { ensureUpdateBody, requireFound } from "#/backend/shared/service-utils";
-import type { UpdateCurrentUserBody } from "#/shared/types/users.type";
+import type {
+	ListUsersQuery,
+	UpdateCurrentUserBody,
+} from "#/shared/types/users.type";
 
 type UpdateCurrentUserInput = {
 	userId: string;
@@ -70,4 +73,23 @@ export const getUserByUsernameService = async (username: string) => {
 	`);
 
 	return requireFound(result.rows[0], "User not found");
+};
+
+export const listUsersService = async ({ search }: ListUsersQuery) => {
+	const searchTerm = search ? `%${search}%` : undefined;
+
+	const result = await db.execute(sql`
+		SELECT
+			id,
+			name,
+			username,
+			image,
+			bio,
+			created_at AS "createdAt"
+		FROM "user"
+		${searchTerm ? sql`WHERE name ILIKE ${searchTerm} OR username ILIKE ${searchTerm}` : sql``}
+		ORDER BY created_at DESC, id
+	`);
+
+	return result.rows;
 };

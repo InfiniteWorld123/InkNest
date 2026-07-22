@@ -2,6 +2,7 @@ import type * as v from "valibot";
 import type {
 	AuthenticatedUserSchema,
 	GetUserByUsernameParamsSchema,
+	ListUsersQuerySchema,
 	UpdateCurrentUserBodySchema,
 } from "../validation/users.validation";
 
@@ -14,3 +15,5 @@ export type UpdateCurrentUserBody = v.InferOutput<
 export type GetUserByUsernameParams = v.InferOutput<
 	typeof GetUserByUsernameParamsSchema
 >;
+
+export type ListUsersQuery = v.InferOutput<typeof ListUsersQuerySchema>;

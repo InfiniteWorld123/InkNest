@@ -19,6 +19,12 @@ const ContentSchema = v.pipe(
 	v.maxLength(100_000, "Post content is too long"),
 );
 
+const ImageSchema = v.pipe(
+	v.string(),
+	v.trim(),
+	v.url("Post image must be a valid URL"),
+);
+
 const PostStatusSchema = v.picklist(["draft", "published", "archived"]);
 
 const PublishedAtSchema = v.pipe(
@@ -67,6 +73,7 @@ export const PostIdParamsSchema = v.object({
 export const CreatePostBodySchema = v.object({
 	title: TitleSchema,
 	slug: SlugSchema,
+	image: v.optional(v.nullable(ImageSchema)),
 	content: ContentSchema,
 	status: v.optional(PostStatusSchema),
 	publishedAt: v.optional(v.nullable(PublishedAtSchema)),
@@ -76,6 +83,7 @@ export const UpdatePostBodySchema = v.pipe(
 	v.object({
 		title: v.optional(TitleSchema),
 		slug: v.optional(SlugSchema),
+		image: v.optional(v.nullable(ImageSchema)),
 		content: v.optional(ContentSchema),
 		status: v.optional(PostStatusSchema),
 		publishedAt: v.optional(v.nullable(PublishedAtSchema)),

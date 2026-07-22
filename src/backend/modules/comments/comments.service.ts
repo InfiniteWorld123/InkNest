@@ -5,11 +5,15 @@ import { requireFound } from "#/backend/shared/service-utils";
 import type {
 	CommentIdParams,
 	CreateCommentBody,
+	ListPostCommentsQuery,
 	PostCommentsParams,
 	UpdateCommentBody,
 } from "#/shared/types/comments.type";
 
-type ListPostCommentsInput = { params: PostCommentsParams };
+type ListPostCommentsInput = {
+	params: PostCommentsParams;
+	query: ListPostCommentsQuery;
+};
 type CreateCommentInput = {
 	userId: string;
 	params: PostCommentsParams;
@@ -38,7 +42,9 @@ const ensurePublishedPostExists = async (postId: number) => {
 
 export const listPostCommentsService = async ({
 	params,
+	query: { cursor, limit = 20 },
 }: ListPostCommentsInput) => {
+	const fetchLimit = limit + 1;
 	const result = await db.execute(sql`
 		SELECT
 			comment.id,
@@ -46,16 +52,44 @@ export const listPostCommentsService = async ({
 			comment.post_id AS "postId",
 			comment.parent_id AS "parentId",
 			comment.content,
-			comment.created_at AS "createdAt"
+			comment.created_at AS "createdAt",
+			author.name AS "authorName",
+			author.username AS "authorUsername",
+			author.image AS "authorImage",
+			parent_author.name AS "parentAuthorName",
+			parent_author.username AS "parentAuthorUsername"
 		FROM comments AS comment
 		INNER JOIN posts AS post
 			ON post.id = comment.post_id
+		INNER JOIN "user" AS author
+			ON author.id = comment.user_id
+		LEFT JOIN comments AS parent
+			ON parent.id = comment.parent_id
+		LEFT JOIN "user" AS parent_author
+			ON parent_author.id = parent.user_id
 		WHERE comment.post_id = ${params.postId}
 			AND post.status = 'published'
-		ORDER BY comment.created_at ASC
+			AND (
+				${cursor ?? null}::integer IS NULL
+				OR (comment.created_at, comment.id) < (
+					SELECT cursor_comment.created_at, cursor_comment.id
+					FROM comments AS cursor_comment
+					WHERE cursor_comment.id = ${cursor ?? null}
+						AND cursor_comment.post_id = ${params.postId}
+				)
+			)
+		ORDER BY comment.created_at DESC, comment.id DESC
+		LIMIT ${fetchLimit}
 	`);
 
-	return result.rows;
+	const hasMore = result.rows.length > limit;
+	const items = result.rows.slice(0, limit);
+	const lastComment = items.at(-1) as { id: number } | undefined;
+
+	return {
+		items,
+		nextCursor: hasMore ? (lastComment?.id ?? null) : null,
+	};
 };
 
 export const createCommentService = async ({
@@ -101,7 +135,30 @@ export const createCommentService = async ({
 		throw badRequestError("Parent comment must belong to the same post");
 	}
 
-	return comment;
+	const createdCommentResult = await db.execute(sql`
+		SELECT
+			comment.id,
+			comment.user_id AS "userId",
+			comment.post_id AS "postId",
+			comment.parent_id AS "parentId",
+			comment.content,
+			comment.created_at AS "createdAt",
+			author.name AS "authorName",
+			author.username AS "authorUsername",
+			author.image AS "authorImage",
+			parent_author.name AS "parentAuthorName",
+			parent_author.username AS "parentAuthorUsername"
+		FROM comments AS comment
+		INNER JOIN "user" AS author
+			ON author.id = comment.user_id
+		LEFT JOIN comments AS parent
+			ON parent.id = comment.parent_id
+		LEFT JOIN "user" AS parent_author
+			ON parent_author.id = parent.user_id
+		WHERE comment.id = ${comment.id}
+	`);
+
+	return requireFound(createdCommentResult.rows[0], "Comment not found");
 };
 
 export const updateCommentService = async ({

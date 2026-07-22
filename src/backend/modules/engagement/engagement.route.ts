@@ -8,6 +8,7 @@ import {
 	bookmarkPost,
 	countPostLikes,
 	followUser,
+	getPostViewerEngagement,
 	likePost,
 	listCurrentUserBookmarks,
 	listCurrentUserLikedPosts,
@@ -27,6 +28,10 @@ export const engagementRoutes = new Elysia()
 	})
 	.get("/posts/:postId/likes/count", countPostLikes, {
 		params: PostIdParamsSchema,
+	})
+	.get("/posts/:postId/viewer-engagement", getPostViewerEngagement, {
+		params: PostIdParamsSchema,
+		optionalAuth: true,
 	})
 	.get("/users/:username/followers", listUserFollowers, {
 		params: UsernameParamsSchema,

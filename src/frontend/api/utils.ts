@@ -13,3 +13,8 @@ export const getErrorMessage = (error: unknown, fallback: string): string => {
 
 	return fallback;
 };
+
+export const getCaughtErrorMessage = (
+	error: unknown,
+	fallback: string,
+): string => (error instanceof Error ? error.message : fallback);

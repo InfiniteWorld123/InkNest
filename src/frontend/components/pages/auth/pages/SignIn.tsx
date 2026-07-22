@@ -1,11 +1,15 @@
+import { Button, Checkbox, Form, Label } from "@heroui/react";
 import { useForm } from "@tanstack/react-form";
-import { Link } from "@tanstack/react-router";
+import { getRouteApi, Link, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 import * as v from "valibot";
+import { useSignInMutation } from "#/frontend/api/queries/auth.query";
+import { getCaughtErrorMessage } from "#/frontend/api/utils";
+import { AuthMessage } from "#/frontend/components/pages/auth/sections/AuthMessage";
 import {
 	AuthShell,
 	authLinkClass,
 } from "#/frontend/components/pages/auth/sections/AuthShell";
-import { Button } from "#/frontend/components/shared/ui/Button";
 import { TextField } from "#/frontend/components/shared/ui/TextField";
 import { EmailSchema } from "#/shared/validation/auth.validation";
 
@@ -15,10 +19,16 @@ const SignInFormSchema = v.object({
 	rememberMe: v.boolean(),
 });
 
+const signInRoute = getRouteApi("/_auth/sign-in");
+
 export function SignIn() {
+	const search = signInRoute.useSearch();
+	const navigate = useNavigate();
+	const signIn = useSignInMutation();
+	const [submissionError, setSubmissionError] = useState<string | null>(null);
 	const form = useForm({
 		defaultValues: {
-			email: "",
+			email: search.email ?? "",
 			password: "",
 			rememberMe: false,
 		},
@@ -26,9 +36,24 @@ export function SignIn() {
 			onChange: SignInFormSchema,
 		},
 		onSubmit: async ({ value }) => {
-			console.log(value);
+			setSubmissionError(null);
+
+			try {
+				await signIn.mutateAsync(value);
+				await navigate({ to: "/" });
+			} catch (error) {
+				setSubmissionError(
+					getCaughtErrorMessage(error, "Unable to sign in. Please try again."),
+				);
+			}
 		},
 	});
+	const notice =
+		search.notice === "verified"
+			? "Your email is verified. You can sign in now."
+			: search.notice === "password-reset"
+				? "Your password has been reset. Sign in with your new password."
+				: null;
 
 	return (
 		<AuthShell
@@ -43,7 +68,17 @@ export function SignIn() {
 				</>
 			}
 		>
-			<form
+			{notice ? (
+				<AuthMessage status="success" title="You're all set" message={notice} />
+			) : null}
+			{submissionError ? (
+				<AuthMessage
+					status="danger"
+					title="Sign-in failed"
+					message={submissionError}
+				/>
+			) : null}
+			<Form
 				onSubmit={(e) => {
 					e.preventDefault();
 					e.stopPropagation();
@@ -93,16 +128,18 @@ export function SignIn() {
 				<div className="flex items-center justify-between">
 					<form.Field name="rememberMe">
 						{(field) => (
-							<label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-								<input
-									type="checkbox"
-									name={field.name}
-									checked={field.state.value}
-									onChange={(e) => field.handleChange(e.target.checked)}
-									className="h-4 w-4 rounded border-slate-300 text-accent-600 focus:ring-accent-500 dark:border-slate-600 dark:bg-slate-800"
-								/>
-								Remember me
-							</label>
+							<Checkbox
+								name={field.name}
+								isSelected={field.state.value}
+								onChange={field.handleChange}
+							>
+								<Checkbox.Content>
+									<Checkbox.Control>
+										<Checkbox.Indicator />
+									</Checkbox.Control>
+									<Label>Remember me</Label>
+								</Checkbox.Content>
+							</Checkbox>
 						)}
 					</form.Field>
 					<Link to="/forgot-password" className={authLinkClass}>
@@ -110,10 +147,30 @@ export function SignIn() {
 					</Link>
 				</div>
 
-				<Button type="submit" fullWidth>
-					Sign in
+				<Button
+					type="submit"
+					fullWidth
+					isDisabled={signIn.isPending}
+					isPending={signIn.isPending}
+				>
+					{signIn.isPending ? "Signing in…" : "Sign in"}
 				</Button>
-			</form>
+
+				<p className="text-center text-sm text-slate-600 dark:text-slate-400">
+					Have a verification code?{" "}
+					<form.Subscribe selector={(state) => state.values.email}>
+						{(email) => (
+							<Link
+								to="/verify-email"
+								search={{ email: email || undefined }}
+								className={authLinkClass}
+							>
+								Verify your email
+							</Link>
+						)}
+					</form.Subscribe>
+				</p>
+			</Form>
 		</AuthShell>
 	);
 }

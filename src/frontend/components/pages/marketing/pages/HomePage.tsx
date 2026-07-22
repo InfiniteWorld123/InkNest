@@ -1,3 +1,4 @@
+import { buttonVariants, Card, Surface } from "@heroui/react";
 import { Link } from "@tanstack/react-router";
 import {
 	ArrowRight,
@@ -9,7 +10,6 @@ import {
 	Tags,
 	Users,
 } from "lucide-react";
-import { Button } from "#/frontend/components/shared/ui/Button";
 
 const features = [
 	{
@@ -72,15 +72,17 @@ export function HomePage() {
 							you tell.
 						</p>
 						<div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-							<Link to="/sign-up">
-								<Button size="lg">
-									Start writing <ArrowRight size={18} />
-								</Button>
+							<Link
+								to="/sign-up"
+								className={buttonVariants({ variant: "primary", size: "lg" })}
+							>
+								Start writing <ArrowRight size={18} />
 							</Link>
-							<Link to="/about">
-								<Button size="lg" variant="secondary">
-									Learn more
-								</Button>
+							<Link
+								to="/about"
+								className={buttonVariants({ variant: "secondary", size: "lg" })}
+							>
+								Learn more
 							</Link>
 						</div>
 					</div>
@@ -114,27 +116,27 @@ export function HomePage() {
 
 				<div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
 					{features.map((feature) => (
-						<div
+						<Card
 							key={feature.title}
-							className="rounded-2xl border border-slate-200 bg-white p-6 transition-shadow hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
+							className="transition-shadow hover:shadow-md"
 						>
-							<span className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent-50 text-accent-600 dark:bg-accent-500/10 dark:text-accent-400">
-								<feature.icon size={20} />
-							</span>
-							<h3 className="mt-5 text-lg font-semibold text-slate-900 dark:text-white">
-								{feature.title}
-							</h3>
-							<p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
-								{feature.body}
-							</p>
-						</div>
+							<Card.Content className="p-6">
+								<span className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent-50 text-accent-600 dark:bg-accent-500/10 dark:text-accent-400">
+									<feature.icon size={20} />
+								</span>
+								<Card.Title className="mt-5">{feature.title}</Card.Title>
+								<Card.Description className="mt-2">
+									{feature.body}
+								</Card.Description>
+							</Card.Content>
+						</Card>
 					))}
 				</div>
 			</section>
 
 			{/* CTA */}
 			<section className="mx-auto max-w-6xl px-5 pb-24">
-				<div className="overflow-hidden rounded-3xl bg-accent-600 px-8 py-14 text-center dark:bg-accent-700">
+				<Surface className="overflow-hidden rounded-3xl bg-accent-600 px-8 py-14 text-center dark:bg-accent-700">
 					<Bookmark className="mx-auto text-accent-200" size={28} />
 					<h2 className="mt-4 text-3xl font-bold tracking-tight text-white">
 						Your next story starts here
@@ -144,13 +146,14 @@ export function HomePage() {
 						started.
 					</p>
 					<div className="mt-8 flex justify-center">
-						<Link to="/sign-up">
-							<Button size="lg" variant="secondary">
-								Create your account <ArrowRight size={18} />
-							</Button>
+						<Link
+							to="/sign-up"
+							className={buttonVariants({ variant: "secondary", size: "lg" })}
+						>
+							Create your account <ArrowRight size={18} />
 						</Link>
 					</div>
-				</div>
+				</Surface>
 			</section>
 		</div>
 	);

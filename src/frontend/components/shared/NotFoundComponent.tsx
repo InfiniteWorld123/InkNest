@@ -31,10 +31,7 @@ export function NotFoundComponent() {
 				</p>
 
 				<div className="mt-8 flex justify-center">
-					<Link
-						to="/"
-						className="inline-flex h-11 items-center justify-center rounded-xl bg-accent-600 px-5 text-sm font-medium text-white transition-colors hover:bg-accent-700 dark:bg-accent-500 dark:hover:bg-accent-400"
-					>
+					<Link to="/" className={buttonVariants({ variant: "primary" })}>
 						Back to home
 					</Link>
 				</div>
@@ -42,3 +39,5 @@ export function NotFoundComponent() {
 		</div>
 	);
 }
+
+import { buttonVariants } from "@heroui/react";

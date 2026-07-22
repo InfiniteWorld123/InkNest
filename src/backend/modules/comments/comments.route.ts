@@ -3,6 +3,7 @@ import { authPlugin } from "#/backend/shared/authPlugin";
 import {
 	CommentIdParamsSchema,
 	CreateCommentBodySchema,
+	ListPostCommentsQuerySchema,
 	PostCommentsParamsSchema,
 	UpdateCommentBodySchema,
 } from "#/shared/validation/comments.validation";
@@ -17,6 +18,7 @@ export const commentsRoutes = new Elysia()
 	.use(authPlugin)
 	.get("/posts/:postId/comments", listPostComments, {
 		params: PostCommentsParamsSchema,
+		query: ListPostCommentsQuerySchema,
 	})
 	.guard({ auth: true }, (app) =>
 		app

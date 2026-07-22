@@ -1,8 +1,13 @@
 import * as v from "valibot";
 import { describe, expect, it } from "vitest";
 import { SignUpSchema } from "./auth.validation";
-import { PositiveIntegerPathParamSchema } from "./common.validation";
-import { UpdatePostBodySchema } from "./post.validation";
+import { ListPostCommentsQuerySchema } from "./comments.validation";
+import {
+	PositiveIntegerPathParamSchema,
+	PositiveIntegerQueryStringSchema,
+} from "./common.validation";
+import { CreatePostBodySchema, UpdatePostBodySchema } from "./post.validation";
+import { UsernameSchema } from "./users.validation";
 
 describe("shared validation", () => {
 	it("normalizes valid sign-up input", () => {
@@ -34,7 +39,50 @@ describe("shared validation", () => {
 		);
 	});
 
+	it("parses positive integer query values from URLs and the router", () => {
+		expect(v.parse(PositiveIntegerQueryStringSchema, "2")).toBe(2);
+		expect(v.parse(PositiveIntegerQueryStringSchema, 2)).toBe(2);
+		expect(v.safeParse(PositiveIntegerQueryStringSchema, 0).success).toBe(
+			false,
+		);
+	});
+
+	it("parses bounded comment pagination", () => {
+		expect(
+			v.parse(ListPostCommentsQuerySchema, { cursor: "42", limit: "20" }),
+		).toEqual({ cursor: 42, limit: 20 });
+		expect(
+			v.safeParse(ListPostCommentsQuerySchema, { limit: "51" }).success,
+		).toBe(false);
+	});
+
 	it("rejects empty post updates", () => {
 		expect(v.safeParse(UpdatePostBodySchema, {}).success).toBe(false);
+	});
+
+	it("accepts a valid post image URL", () => {
+		const result = v.parse(CreatePostBodySchema, {
+			title: "A post with an image",
+			slug: "a-post-with-an-image",
+			image: "https://images.example.com/post.jpg",
+			content: "Post content",
+		});
+
+		expect(result.image).toBe("https://images.example.com/post.jpg");
+	});
+
+	it("rejects an invalid post image URL", () => {
+		expect(
+			v.safeParse(CreatePostBodySchema, {
+				title: "A post with a bad image",
+				slug: "a-post-with-a-bad-image",
+				image: "not-a-url",
+				content: "Post content",
+			}).success,
+		).toBe(false);
+	});
+
+	it("accepts the dotted username format used by public profiles", () => {
+		expect(v.parse(UsernameSchema, "Amara.Okafor")).toBe("amara.okafor");
 	});
 });

@@ -1,43 +1,93 @@
+import { Button, Form } from "@heroui/react";
 import { useForm } from "@tanstack/react-form";
-import { Link } from "@tanstack/react-router";
+import { getRouteApi, Link, useNavigate } from "@tanstack/react-router";
 import { MailCheck } from "lucide-react";
-import * as v from "valibot";
+import { useState } from "react";
+import {
+	useSendEmailOtpMutation,
+	useVerifyEmailMutation,
+} from "#/frontend/api/queries/auth.query";
+import { getCaughtErrorMessage } from "#/frontend/api/utils";
+import { AuthMessage } from "#/frontend/components/pages/auth/sections/AuthMessage";
 import {
 	AuthShell,
 	authLinkClass,
 } from "#/frontend/components/pages/auth/sections/AuthShell";
-import { Button } from "#/frontend/components/shared/ui/Button";
 import { OtpInput } from "#/frontend/components/shared/ui/OtpInput";
+import { VerifyEmailSchema } from "#/shared/validation/auth.validation";
 
 const OTP_LENGTH = 6;
 
-const VerifyEmailFormSchema = v.object({
-	otp: v.pipe(
-		v.string(),
-		v.regex(
-			new RegExp(`^\\d{${OTP_LENGTH}}$`),
-			`Enter all ${OTP_LENGTH} digits`,
-		),
-	),
-});
+const verifyEmailRoute = getRouteApi("/_auth/verify-email");
 
 export function VerifyEmail() {
+	const search = verifyEmailRoute.useSearch();
+	const navigate = useNavigate();
+	const verifyEmail = useVerifyEmailMutation();
+	const sendEmailOtp = useSendEmailOtpMutation();
+	const [submissionError, setSubmissionError] = useState<string | null>(null);
+	const [resendMessage, setResendMessage] = useState<string | null>(null);
 	const form = useForm({
 		defaultValues: {
+			email: search.email ?? "",
 			otp: "",
 		},
 		validators: {
-			onChange: VerifyEmailFormSchema,
+			onChange: VerifyEmailSchema,
 		},
 		onSubmit: async ({ value }) => {
-			console.log(value);
+			setSubmissionError(null);
+			setResendMessage(null);
+
+			try {
+				await verifyEmail.mutateAsync(value);
+				await navigate({
+					to: "/sign-in",
+					search: { email: value.email, notice: "verified" },
+				});
+			} catch (error) {
+				setSubmissionError(
+					getCaughtErrorMessage(
+						error,
+						"Unable to verify your email. Please check the code and try again.",
+					),
+				);
+			}
 		},
 	});
+
+	const handleResend = async () => {
+		if (!search.email) {
+			setSubmissionError(
+				"Return to sign up so we know where to send the code.",
+			);
+			return;
+		}
+
+		setSubmissionError(null);
+		setResendMessage(null);
+
+		try {
+			await sendEmailOtp.mutateAsync({
+				email: search.email,
+				type: "email-verification",
+			});
+			setResendMessage("A new verification code was sent to your email.");
+		} catch (error) {
+			setSubmissionError(
+				getCaughtErrorMessage(error, "Unable to resend the code right now."),
+			);
+		}
+	};
 
 	return (
 		<AuthShell
 			title="Verify your email"
-			subtitle="Enter the 6-digit code we sent to your inbox."
+			subtitle={
+				search.email
+					? `Enter the 6-digit code we sent to ${search.email}.`
+					: "Open this page from sign up, or return and enter your email again."
+			}
 			footer={
 				<>
 					Wrong email?{" "}
@@ -47,13 +97,27 @@ export function VerifyEmail() {
 				</>
 			}
 		>
+			{submissionError ? (
+				<AuthMessage
+					status="danger"
+					title="Verification failed"
+					message={submissionError}
+				/>
+			) : null}
+			{resendMessage ? (
+				<AuthMessage
+					status="success"
+					title="Code sent"
+					message={resendMessage}
+				/>
+			) : null}
 			<div className="mb-6 flex justify-center">
 				<span className="flex h-12 w-12 items-center justify-center rounded-full bg-accent-50 text-accent-600 dark:bg-accent-500/10 dark:text-accent-400">
 					<MailCheck size={24} />
 				</span>
 			</div>
 
-			<form
+			<Form
 				onSubmit={(e) => {
 					e.preventDefault();
 					e.stopPropagation();
@@ -77,21 +141,34 @@ export function VerifyEmail() {
 					)}
 				</form.Field>
 
-				<Button type="submit" fullWidth>
-					Verify email
+				<Button
+					type="submit"
+					fullWidth
+					isDisabled={!search.email || verifyEmail.isPending}
+					isPending={verifyEmail.isPending}
+				>
+					{verifyEmail.isPending ? "Verifying…" : "Verify email"}
 				</Button>
 
 				<div className="text-center text-sm text-slate-600 dark:text-slate-400">
 					Didn't get a code?{" "}
-					<button type="button" className={authLinkClass}>
-						Resend code
-					</button>
+					<Button
+						type="button"
+						variant="ghost"
+						size="sm"
+						className={authLinkClass}
+						onPress={handleResend}
+						isDisabled={!search.email || sendEmailOtp.isPending}
+						isPending={sendEmailOtp.isPending}
+					>
+						{sendEmailOtp.isPending ? "Sending…" : "Resend code"}
+					</Button>
 				</div>
 
 				<p className="text-center text-xs text-slate-500 dark:text-slate-500">
 					The code expires in 5 minutes. You have up to 3 attempts.
 				</p>
-			</form>
+			</Form>
 		</AuthShell>
 	);
 }

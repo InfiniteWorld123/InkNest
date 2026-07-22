@@ -33,6 +33,7 @@ const postReturningFields = {
 	authorId: posts.authorId,
 	title: posts.title,
 	slug: posts.slug,
+	image: posts.image,
 	content: posts.content,
 	status: posts.status,
 	publishedAt: posts.publishedAt,
@@ -49,9 +50,7 @@ export const listPostsService = async ({
 	page = 1,
 	limit = 10,
 }: ListPostsQuery) => {
-	const offset = (page - 1) * limit;
 	const conditions: SQL[] = [sql`p.status = 'published'`];
-	const filterJoins: SQL[] = [];
 
 	if (search) {
 		const searchTerm = `%${search}%`;
@@ -64,39 +63,53 @@ export const listPostsService = async ({
 	}
 
 	if (category) {
-		filterJoins.push(sql`
-			INNER JOIN post_categories AS post_category
-				ON post_category.post_id = p.id
+		conditions.push(sql`EXISTS (
+			SELECT 1
+			FROM post_categories AS post_category
 			INNER JOIN categories AS category
 				ON category.id = post_category.category_id
-		`);
-		conditions.push(sql`category.slug = ${category}`);
+			WHERE post_category.post_id = p.id
+				AND category.slug = ${category}
+		)`);
 	}
 
 	if (tags?.length) {
 		const tagValues = tags.map((tag) => sql`${tag}`);
-		filterJoins.push(sql`
-			INNER JOIN post_tags AS post_tag
-				ON post_tag.post_id = p.id
+		conditions.push(sql`EXISTS (
+			SELECT 1
+			FROM post_tags AS post_tag
 			INNER JOIN tags AS tag
 				ON tag.id = post_tag.tag_id
-		`);
-		conditions.push(sql`tag.slug IN (${sql.join(tagValues, sql`, `)})`);
+			WHERE post_tag.post_id = p.id
+				AND tag.slug IN (${sql.join(tagValues, sql`, `)})
+		)`);
 	}
 
 	const sortColumns: Record<NonNullable<ListPostsQuery["sortBy"]>, SQL> = {
 		date: sql`p.published_at`,
-		views: sql`"viewsCount"`,
-		likes: sql`"likesCount"`,
-		bookmarks: sql`"bookmarksCount"`,
+		views: sql`COALESCE(view_count.count, 0)`,
+		likes: sql`COALESCE(like_count.count, 0)`,
+		bookmarks: sql`COALESCE(bookmark_count.count, 0)`,
 	};
 	const sortDirection = order === "asc" ? sql`ASC` : sql`DESC`;
+	const countResult = await db.execute(sql`
+		SELECT COUNT(DISTINCT p.id)::integer AS total
+		FROM posts AS p
+		INNER JOIN "user" AS u
+			ON u.id = p.author_id
+		WHERE ${sql.join(conditions, sql` AND `)}
+	`);
+	const total = Number(countResult.rows[0]?.total ?? 0);
+	const totalPages = Math.max(1, Math.ceil(total / limit));
+	const currentPage = Math.min(page, totalPages);
+	const offset = (currentPage - 1) * limit;
 
 	const result = await db.execute(sql`
 		SELECT
 			p.id,
 			p.title,
 			p.slug,
+			p.image,
 			p.content,
 			p.published_at AS "publishedAt",
 			p.created_at AS "createdAt",
@@ -105,27 +118,47 @@ export const listPostsService = async ({
 			u.name AS "authorName",
 			u.username AS "authorUsername",
 			u.image AS "authorImage",
-			COUNT(DISTINCT post_like.user_id)::integer AS "likesCount",
-			COUNT(DISTINCT post_view.id)::integer AS "viewsCount",
-			COUNT(DISTINCT bookmark.user_id)::integer AS "bookmarksCount"
+			COALESCE(like_count.count, 0)::integer AS "likesCount",
+			COALESCE(view_count.count, 0)::integer AS "viewsCount",
+			COALESCE(bookmark_count.count, 0)::integer AS "bookmarksCount"
 		FROM posts AS p
 		INNER JOIN "user" AS u
 			ON u.id = p.author_id
-		${sql.join(filterJoins, sql` `)}
-		LEFT JOIN likes AS post_like
-			ON post_like.post_id = p.id
-		LEFT JOIN post_views AS post_view
-			ON post_view.post_id = p.id
-		LEFT JOIN bookmarks AS bookmark
-			ON bookmark.post_id = p.id
+		LEFT JOIN (
+			SELECT post_id, COUNT(*)::integer AS count
+			FROM likes
+			GROUP BY post_id
+		) AS like_count
+			ON like_count.post_id = p.id
+		LEFT JOIN (
+			SELECT post_id, COUNT(*)::integer AS count
+			FROM post_views
+			GROUP BY post_id
+		) AS view_count
+			ON view_count.post_id = p.id
+		LEFT JOIN (
+			SELECT post_id, COUNT(*)::integer AS count
+			FROM bookmarks
+			GROUP BY post_id
+		) AS bookmark_count
+			ON bookmark_count.post_id = p.id
 		WHERE ${sql.join(conditions, sql` AND `)}
-		GROUP BY p.id, u.id
 		ORDER BY ${sortColumns[sortBy]} ${sortDirection}, p.id DESC
 		LIMIT ${limit}
 		OFFSET ${offset}
 	`);
 
-	return result.rows;
+	return {
+		items: result.rows,
+		pagination: {
+			page: currentPage,
+			limit,
+			total,
+			totalPages,
+			hasPreviousPage: currentPage > 1,
+			hasNextPage: currentPage < totalPages,
+		},
+	};
 };
 
 export const getPostBySlugService = async (params: GetPostBySlugParams) => {
@@ -134,6 +167,7 @@ export const getPostBySlugService = async (params: GetPostBySlugParams) => {
 			p.id,
 			p.title,
 			p.slug,
+			p.image,
 			p.content,
 			p.published_at AS "publishedAt",
 			p.created_at AS "createdAt",
@@ -142,21 +176,32 @@ export const getPostBySlugService = async (params: GetPostBySlugParams) => {
 			u.name AS "authorName",
 			u.username AS "authorUsername",
 			u.image AS "authorImage",
-			COUNT(DISTINCT post_like.user_id)::integer AS "likesCount",
-			COUNT(DISTINCT post_view.id)::integer AS "viewsCount",
-			COUNT(DISTINCT bookmark.user_id)::integer AS "bookmarksCount"
+			COALESCE(like_count.count, 0)::integer AS "likesCount",
+			COALESCE(view_count.count, 0)::integer AS "viewsCount",
+			COALESCE(bookmark_count.count, 0)::integer AS "bookmarksCount"
 		FROM posts AS p
 		INNER JOIN "user" AS u
 			ON u.id = p.author_id
-		LEFT JOIN likes AS post_like
-			ON post_like.post_id = p.id
-		LEFT JOIN post_views AS post_view
-			ON post_view.post_id = p.id
-		LEFT JOIN bookmarks AS bookmark
-			ON bookmark.post_id = p.id
+		LEFT JOIN (
+			SELECT post_id, COUNT(*)::integer AS count
+			FROM likes
+			GROUP BY post_id
+		) AS like_count
+			ON like_count.post_id = p.id
+		LEFT JOIN (
+			SELECT post_id, COUNT(*)::integer AS count
+			FROM post_views
+			GROUP BY post_id
+		) AS view_count
+			ON view_count.post_id = p.id
+		LEFT JOIN (
+			SELECT post_id, COUNT(*)::integer AS count
+			FROM bookmarks
+			GROUP BY post_id
+		) AS bookmark_count
+			ON bookmark_count.post_id = p.id
 		WHERE p.slug = ${params.slug}
 			AND p.status = 'published'
-		GROUP BY p.id, u.id
 	`);
 
 	return requireFound(result.rows[0], "Post not found");
@@ -169,6 +214,7 @@ export const listCurrentUserPostsService = async (authorId: string) => {
 			author_id AS "authorId",
 			title,
 			slug,
+			image,
 			content,
 			status,
 			published_at AS "publishedAt",

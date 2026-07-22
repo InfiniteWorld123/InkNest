@@ -19,6 +19,10 @@ type RecordPostViewInput = {
 	userId: string | null;
 	params: PostIdParams;
 };
+type PostViewerEngagementInput = {
+	userId: string | null;
+	params: PostIdParams;
+};
 
 export const listUsersWhoLikedPostService = async ({
 	params,
@@ -84,6 +88,38 @@ export const countPostLikesService = async ({
 	`);
 
 	return result.rows[0];
+};
+
+export const getPostViewerEngagementService = async ({
+	userId,
+	params,
+}: PostViewerEngagementInput) => {
+	const result = await db.execute(sql`
+		SELECT
+			CASE
+				WHEN ${userId}::text IS NULL THEN FALSE
+				ELSE EXISTS (
+					SELECT 1
+					FROM likes
+					WHERE likes.user_id = ${userId}
+						AND likes.post_id = post.id
+				)
+			END AS liked,
+			CASE
+				WHEN ${userId}::text IS NULL THEN FALSE
+				ELSE EXISTS (
+					SELECT 1
+					FROM bookmarks
+					WHERE bookmarks.user_id = ${userId}
+						AND bookmarks.post_id = post.id
+				)
+			END AS bookmarked
+		FROM posts AS post
+		WHERE post.id = ${params.postId}
+			AND post.status = 'published'
+	`);
+
+	return requireFound(result.rows[0], "Post not found");
 };
 
 export const likePostService = async ({

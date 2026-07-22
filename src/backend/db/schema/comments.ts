@@ -30,6 +30,11 @@ export const comments = pgTable(
 			name: "comments_parent_id_comments_id_fkey",
 		}).onDelete("cascade"),
 		index("comments_post_id_idx").on(table.postId),
+		index("comments_post_created_id_idx").on(
+			table.postId,
+			table.createdAt,
+			table.id,
+		),
 		index("comments_user_id_idx").on(table.userId),
 		index("comments_parent_id_idx").on(table.parentId),
 	],

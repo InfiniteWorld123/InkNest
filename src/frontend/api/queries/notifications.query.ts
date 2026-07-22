@@ -6,6 +6,17 @@ import {
 import { safe_API } from "#/frontend/routes/api.$";
 import { getErrorMessage } from "../utils";
 
+export type NotificationItem = {
+	id: number;
+	userId: string;
+	actorId: string | null;
+	postId: number | null;
+	commentId: number | null;
+	type: string;
+	isRead: boolean;
+	createdAt: string | Date;
+};
+
 export const notificationKeys = {
 	all: ["notifications"] as const,
 	lists: () => [...notificationKeys.all, "list"] as const,
@@ -42,11 +53,37 @@ export const markNotificationReadMutation = () => {
 
 			return result.data;
 		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: notificationKeys.lists() });
+		onMutate: async ({ id }) => {
+			await queryClient.cancelQueries({ queryKey: notificationKeys.lists() });
+
+			const previousNotifications = queryClient.getQueryData<
+				NotificationItem[]
+			>(notificationKeys.lists());
+
+			queryClient.setQueryData<NotificationItem[]>(
+				notificationKeys.lists(),
+				(old) =>
+					old?.map((notification) =>
+						notification.id === id
+							? { ...notification, isRead: true }
+							: notification,
+					),
+			);
+
+			return { previousNotifications };
 		},
-		onError: (error) => {
+		onError: (error, _variables, context) => {
+			if (context?.previousNotifications) {
+				queryClient.setQueryData(
+					notificationKeys.lists(),
+					context.previousNotifications,
+				);
+			}
+
 			console.log(error.message);
+		},
+		onSettled: () => {
+			queryClient.invalidateQueries({ queryKey: notificationKeys.lists() });
 		},
 	});
 };
@@ -69,11 +106,33 @@ export const markAllNotificationsReadMutation = () => {
 
 			return result.data;
 		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: notificationKeys.lists() });
+		onMutate: async () => {
+			await queryClient.cancelQueries({ queryKey: notificationKeys.lists() });
+
+			const previousNotifications = queryClient.getQueryData<
+				NotificationItem[]
+			>(notificationKeys.lists());
+
+			queryClient.setQueryData<NotificationItem[]>(
+				notificationKeys.lists(),
+				(old) =>
+					old?.map((notification) => ({ ...notification, isRead: true })),
+			);
+
+			return { previousNotifications };
 		},
-		onError: (error) => {
+		onError: (error, _variables, context) => {
+			if (context?.previousNotifications) {
+				queryClient.setQueryData(
+					notificationKeys.lists(),
+					context.previousNotifications,
+				);
+			}
+
 			console.log(error.message);
+		},
+		onSettled: () => {
+			queryClient.invalidateQueries({ queryKey: notificationKeys.lists() });
 		},
 	});
 };
@@ -93,11 +152,32 @@ export const deleteNotificationMutation = () => {
 
 			return result.data;
 		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: notificationKeys.lists() });
+		onMutate: async ({ id }) => {
+			await queryClient.cancelQueries({ queryKey: notificationKeys.lists() });
+
+			const previousNotifications = queryClient.getQueryData<
+				NotificationItem[]
+			>(notificationKeys.lists());
+
+			queryClient.setQueryData<NotificationItem[]>(
+				notificationKeys.lists(),
+				(old) => old?.filter((notification) => notification.id !== id),
+			);
+
+			return { previousNotifications };
 		},
-		onError: (error) => {
+		onError: (error, _variables, context) => {
+			if (context?.previousNotifications) {
+				queryClient.setQueryData(
+					notificationKeys.lists(),
+					context.previousNotifications,
+				);
+			}
+
 			console.log(error.message);
+		},
+		onSettled: () => {
+			queryClient.invalidateQueries({ queryKey: notificationKeys.lists() });
 		},
 	});
 };

@@ -8,6 +8,7 @@
   },
   "scripts": {
     "dev": "vite dev --port 3000",
+    "db:seed": "bun run src/backend/db/seed.ts",
     "generate-routes": "tsr generate",
     "build": "vite build",
     "preview": "vite preview",
@@ -19,6 +20,8 @@
   },
   "dependencies": {
     "@elysia/eden": "^1.4.10",
+    "@heroui/react": "^3.2.2",
+    "@heroui/styles": "^3.2.2",
     "@neondatabase/serverless": "^1.1.0",
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/react-devtools": "latest",

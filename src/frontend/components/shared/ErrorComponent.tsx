@@ -1,6 +1,6 @@
+import { Button, buttonVariants } from "@heroui/react";
 import { Link } from "@tanstack/react-router";
 import { Feather, RotateCcw, TriangleAlert } from "lucide-react";
-import { Button } from "#/frontend/components/shared/ui/Button";
 
 interface ErrorComponentProps {
 	error?: unknown;
@@ -47,13 +47,10 @@ export function ErrorComponent({ error, message, reset }: ErrorComponentProps) {
 				</p>
 
 				<div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-center">
-					<Link
-						to="/"
-						className="inline-flex h-11 items-center justify-center rounded-xl border border-slate-300 px-5 text-sm font-medium text-slate-900 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:text-slate-100 dark:hover:bg-slate-800"
-					>
+					<Link to="/" className={buttonVariants({ variant: "outline" })}>
 						Go home
 					</Link>
-					<Button onClick={handleRetry}>
+					<Button onPress={handleRetry}>
 						<RotateCcw size={16} />
 						Try again
 					</Button>

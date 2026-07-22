@@ -1,4 +1,8 @@
-import { useMutation } from "@tanstack/react-query";
+import {
+	queryOptions,
+	useMutation,
+	useQueryClient,
+} from "@tanstack/react-query";
 import { safe_API } from "#/frontend/routes/api.$";
 import type {
 	ForgotPasswordBody,
@@ -10,7 +14,28 @@ import type {
 } from "#/shared/types/auth.type";
 import { getErrorMessage } from "../utils";
 
-export const signUpMutation = () => {
+export const authKeys = {
+	all: ["auth"] as const,
+	session: () => [...authKeys.all, "session"] as const,
+};
+
+export const sessionQueryOptions = () =>
+	queryOptions({
+		queryKey: authKeys.session(),
+		queryFn: async () => {
+			const result = await safe_API().auth.session.get();
+
+			if (result.error) {
+				throw new Error(
+					getErrorMessage(result.error, "Unable to load your session"),
+				);
+			}
+
+			return result.data.data;
+		},
+	});
+
+export const useSignUpMutation = () => {
 	return useMutation({
 		mutationFn: async (body: SignUpBody) => {
 			const result = await safe_API().auth["sign-up"].post(body);
@@ -19,15 +44,14 @@ export const signUpMutation = () => {
 				throw new Error(getErrorMessage(result.error, "Unable to sign up"));
 			}
 
-			return result.data;
-		},
-		onError: (error) => {
-			console.log(error.message);
+			return result.data.data;
 		},
 	});
 };
 
-export const signInMutation = () => {
+export const useSignInMutation = () => {
+	const queryClient = useQueryClient();
+
 	return useMutation({
 		mutationFn: async (body: SignInBody) => {
 			const result = await safe_API().auth["sign-in"].post(body);
@@ -36,15 +60,15 @@ export const signInMutation = () => {
 				throw new Error(getErrorMessage(result.error, "Unable to sign in"));
 			}
 
-			return result.data;
+			return result.data.data;
 		},
-		onError: (error) => {
-			console.log(error.message);
+		onSuccess: async () => {
+			await queryClient.invalidateQueries({ queryKey: authKeys.all });
 		},
 	});
 };
 
-export const verifyEmailMutation = () => {
+export const useVerifyEmailMutation = () => {
 	return useMutation({
 		mutationFn: async (body: VerifyEmailBody) => {
 			const result = await safe_API().auth["verify-email"].post(body);
@@ -55,15 +79,12 @@ export const verifyEmailMutation = () => {
 				);
 			}
 
-			return result.data;
-		},
-		onError: (error) => {
-			console.log(error.message);
+			return result.data.data;
 		},
 	});
 };
 
-export const sendEmailOtpMutation = () => {
+export const useSendEmailOtpMutation = () => {
 	return useMutation({
 		mutationFn: async (body: SendVerificationOtpBody) => {
 			const result = await safe_API().auth["send-verification-otp"].post(body);
@@ -72,15 +93,12 @@ export const sendEmailOtpMutation = () => {
 				throw new Error(getErrorMessage(result.error, "Unable to send OTP"));
 			}
 
-			return result.data;
-		},
-		onError: (error) => {
-			console.log(error.message);
+			return result.data.data;
 		},
 	});
 };
 
-export const forgotPasswordMutation = () => {
+export const useForgotPasswordMutation = () => {
 	return useMutation({
 		mutationFn: async (body: ForgotPasswordBody) => {
 			const result = await safe_API().auth["forgot-password"].post(body);
@@ -91,15 +109,12 @@ export const forgotPasswordMutation = () => {
 				);
 			}
 
-			return result.data;
-		},
-		onError: (error) => {
-			console.log(error.message);
+			return result.data.data;
 		},
 	});
 };
 
-export const resetPasswordMutation = () => {
+export const useResetPasswordMutation = () => {
 	return useMutation({
 		mutationFn: async (body: ResetPasswordBody) => {
 			const result = await safe_API().auth["reset-password"].post(body);
@@ -110,15 +125,14 @@ export const resetPasswordMutation = () => {
 				);
 			}
 
-			return result.data;
-		},
-		onError: (error) => {
-			console.log(error.message);
+			return result.data.data;
 		},
 	});
 };
 
-export const signOutMutation = () => {
+export const useSignOutMutation = () => {
+	const queryClient = useQueryClient();
+
 	return useMutation({
 		mutationFn: async () => {
 			const result = await safe_API().auth["sign-out"].post();
@@ -127,10 +141,10 @@ export const signOutMutation = () => {
 				throw new Error(getErrorMessage(result.error, "Unable to sign out"));
 			}
 
-			return result.data;
+			return result.data.data;
 		},
-		onError: (error) => {
-			console.log(error.message);
+		onSuccess: async () => {
+			await queryClient.invalidateQueries({ queryKey: authKeys.all });
 		},
 	});
 };

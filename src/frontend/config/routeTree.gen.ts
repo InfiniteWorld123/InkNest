@@ -13,13 +13,17 @@ import { Route as MarketingRouteImport } from './../routes/_marketing'
 import { Route as AuthRouteImport } from './../routes/_auth'
 import { Route as MarketingIndexRouteImport } from './../routes/_marketing/index'
 import { Route as ApiSplatRouteImport } from './../routes/api.$'
+import { Route as MarketingUsersRouteImport } from './../routes/_marketing/users'
 import { Route as MarketingContactRouteImport } from './../routes/_marketing/contact'
+import { Route as MarketingBlogRouteImport } from './../routes/_marketing/blog'
 import { Route as MarketingAboutRouteImport } from './../routes/_marketing/about'
 import { Route as AuthVerifyEmailRouteImport } from './../routes/_auth/verify-email'
 import { Route as AuthSignUpRouteImport } from './../routes/_auth/sign-up'
 import { Route as AuthSignInRouteImport } from './../routes/_auth/sign-in'
 import { Route as AuthResetPasswordRouteImport } from './../routes/_auth/reset-password'
 import { Route as AuthForgotPasswordRouteImport } from './../routes/_auth/forgot-password'
+import { Route as MarketingUsersUsernameRouteImport } from './../routes/_marketing/users_.$username'
+import { Route as MarketingBlogSlugRouteImport } from './../routes/_marketing/blog_.$slug'
 
 const MarketingRoute = MarketingRouteImport.update({
   id: '/_marketing',
@@ -39,9 +43,19 @@ const ApiSplatRoute = ApiSplatRouteImport.update({
   path: '/api/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MarketingUsersRoute = MarketingUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => MarketingRoute,
+} as any)
 const MarketingContactRoute = MarketingContactRouteImport.update({
   id: '/contact',
   path: '/contact',
+  getParentRoute: () => MarketingRoute,
+} as any)
+const MarketingBlogRoute = MarketingBlogRouteImport.update({
+  id: '/blog',
+  path: '/blog',
   getParentRoute: () => MarketingRoute,
 } as any)
 const MarketingAboutRoute = MarketingAboutRouteImport.update({
@@ -74,6 +88,16 @@ const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
   path: '/forgot-password',
   getParentRoute: () => AuthRoute,
 } as any)
+const MarketingUsersUsernameRoute = MarketingUsersUsernameRouteImport.update({
+  id: '/users_/$username',
+  path: '/users/$username',
+  getParentRoute: () => MarketingRoute,
+} as any)
+const MarketingBlogSlugRoute = MarketingBlogSlugRouteImport.update({
+  id: '/blog_/$slug',
+  path: '/blog/$slug',
+  getParentRoute: () => MarketingRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof MarketingIndexRoute
@@ -83,8 +107,12 @@ export interface FileRoutesByFullPath {
   '/sign-up': typeof AuthSignUpRoute
   '/verify-email': typeof AuthVerifyEmailRoute
   '/about': typeof MarketingAboutRoute
+  '/blog': typeof MarketingBlogRoute
   '/contact': typeof MarketingContactRoute
+  '/users': typeof MarketingUsersRoute
   '/api/$': typeof ApiSplatRoute
+  '/blog/$slug': typeof MarketingBlogSlugRoute
+  '/users/$username': typeof MarketingUsersUsernameRoute
 }
 export interface FileRoutesByTo {
   '/': typeof MarketingIndexRoute
@@ -94,8 +122,12 @@ export interface FileRoutesByTo {
   '/sign-up': typeof AuthSignUpRoute
   '/verify-email': typeof AuthVerifyEmailRoute
   '/about': typeof MarketingAboutRoute
+  '/blog': typeof MarketingBlogRoute
   '/contact': typeof MarketingContactRoute
+  '/users': typeof MarketingUsersRoute
   '/api/$': typeof ApiSplatRoute
+  '/blog/$slug': typeof MarketingBlogSlugRoute
+  '/users/$username': typeof MarketingUsersUsernameRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -107,9 +139,13 @@ export interface FileRoutesById {
   '/_auth/sign-up': typeof AuthSignUpRoute
   '/_auth/verify-email': typeof AuthVerifyEmailRoute
   '/_marketing/about': typeof MarketingAboutRoute
+  '/_marketing/blog': typeof MarketingBlogRoute
   '/_marketing/contact': typeof MarketingContactRoute
+  '/_marketing/users': typeof MarketingUsersRoute
   '/api/$': typeof ApiSplatRoute
   '/_marketing/': typeof MarketingIndexRoute
+  '/_marketing/blog_/$slug': typeof MarketingBlogSlugRoute
+  '/_marketing/users_/$username': typeof MarketingUsersUsernameRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -121,8 +157,12 @@ export interface FileRouteTypes {
     | '/sign-up'
     | '/verify-email'
     | '/about'
+    | '/blog'
     | '/contact'
+    | '/users'
     | '/api/$'
+    | '/blog/$slug'
+    | '/users/$username'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -132,8 +172,12 @@ export interface FileRouteTypes {
     | '/sign-up'
     | '/verify-email'
     | '/about'
+    | '/blog'
     | '/contact'
+    | '/users'
     | '/api/$'
+    | '/blog/$slug'
+    | '/users/$username'
   id:
     | '__root__'
     | '/_auth'
@@ -144,9 +188,13 @@ export interface FileRouteTypes {
     | '/_auth/sign-up'
     | '/_auth/verify-email'
     | '/_marketing/about'
+    | '/_marketing/blog'
     | '/_marketing/contact'
+    | '/_marketing/users'
     | '/api/$'
     | '/_marketing/'
+    | '/_marketing/blog_/$slug'
+    | '/_marketing/users_/$username'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -185,11 +233,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_marketing/users': {
+      id: '/_marketing/users'
+      path: '/users'
+      fullPath: '/users'
+      preLoaderRoute: typeof MarketingUsersRouteImport
+      parentRoute: typeof MarketingRoute
+    }
     '/_marketing/contact': {
       id: '/_marketing/contact'
       path: '/contact'
       fullPath: '/contact'
       preLoaderRoute: typeof MarketingContactRouteImport
+      parentRoute: typeof MarketingRoute
+    }
+    '/_marketing/blog': {
+      id: '/_marketing/blog'
+      path: '/blog'
+      fullPath: '/blog'
+      preLoaderRoute: typeof MarketingBlogRouteImport
       parentRoute: typeof MarketingRoute
     }
     '/_marketing/about': {
@@ -234,6 +296,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthForgotPasswordRouteImport
       parentRoute: typeof AuthRoute
     }
+    '/_marketing/users_/$username': {
+      id: '/_marketing/users_/$username'
+      path: '/users/$username'
+      fullPath: '/users/$username'
+      preLoaderRoute: typeof MarketingUsersUsernameRouteImport
+      parentRoute: typeof MarketingRoute
+    }
+    '/_marketing/blog_/$slug': {
+      id: '/_marketing/blog_/$slug'
+      path: '/blog/$slug'
+      fullPath: '/blog/$slug'
+      preLoaderRoute: typeof MarketingBlogSlugRouteImport
+      parentRoute: typeof MarketingRoute
+    }
   }
 }
 
@@ -257,14 +333,22 @@ const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
 interface MarketingRouteChildren {
   MarketingAboutRoute: typeof MarketingAboutRoute
+  MarketingBlogRoute: typeof MarketingBlogRoute
   MarketingContactRoute: typeof MarketingContactRoute
+  MarketingUsersRoute: typeof MarketingUsersRoute
   MarketingIndexRoute: typeof MarketingIndexRoute
+  MarketingBlogSlugRoute: typeof MarketingBlogSlugRoute
+  MarketingUsersUsernameRoute: typeof MarketingUsersUsernameRoute
 }
 
 const MarketingRouteChildren: MarketingRouteChildren = {
   MarketingAboutRoute: MarketingAboutRoute,
+  MarketingBlogRoute: MarketingBlogRoute,
   MarketingContactRoute: MarketingContactRoute,
+  MarketingUsersRoute: MarketingUsersRoute,
   MarketingIndexRoute: MarketingIndexRoute,
+  MarketingBlogSlugRoute: MarketingBlogSlugRoute,
+  MarketingUsersUsernameRoute: MarketingUsersUsernameRoute,
 }
 
 const MarketingRouteWithChildren = MarketingRoute._addFileChildren(

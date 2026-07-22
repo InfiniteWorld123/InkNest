@@ -1,3 +1,4 @@
+import { Card } from "@heroui/react";
 import { Link } from "@tanstack/react-router";
 import { Feather } from "lucide-react";
 import type { ReactNode } from "react";
@@ -28,20 +29,22 @@ export function AuthShell({
 				</Link>
 			</div>
 
-			<div className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 dark:border-slate-800 dark:bg-slate-900">
-				<div className="text-center">
-					<h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-						{title}
-					</h1>
-					{subtitle ? (
-						<p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
-							{subtitle}
-						</p>
-					) : null}
-				</div>
+			<Card className="mt-8">
+				<Card.Content className="p-6 sm:p-8">
+					<div className="text-center">
+						<h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+							{title}
+						</h1>
+						{subtitle ? (
+							<p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+								{subtitle}
+							</p>
+						) : null}
+					</div>
 
-				<div className="mt-7">{children}</div>
-			</div>
+					<div className="mt-7">{children}</div>
+				</Card.Content>
+			</Card>
 
 			{footer ? (
 				<div className="mt-6 text-center text-sm text-slate-600 dark:text-slate-400">
