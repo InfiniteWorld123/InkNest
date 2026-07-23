@@ -13,6 +13,7 @@ import { usePrefetchMarketingRoute } from "#/frontend/hooks/usePrefetchMarketing
 const links = [
 	{ to: "/", label: "Home" },
 	{ to: "/blog", label: "Blog" },
+	{ to: "/studio", label: "Studio" },
 	{ to: "/users", label: "Community" },
 	{ to: "/about", label: "About" },
 	{ to: "/contact", label: "Contact" },
