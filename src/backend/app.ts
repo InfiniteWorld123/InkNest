@@ -12,43 +12,47 @@ import { handleError } from "./shared/error-handler";
 import { HttpStatusCode } from "./shared/http";
 import { responseError, responseOk } from "./shared/response";
 
-export const app = new Elysia({ prefix: "/api" })
-  .error({ AppError })
-  .onError(handleError)
-  .use(authRoutes)
-  .use(usersRoutes)
-  .use(postsRoutes)
-  .use(commentsRoutes)
-  .use(taxonomyRoutes)
-  .use(engagementRoutes)
-  .use(notificationsRoutes)
-  .get("/", () =>
-    responseOk({
-      data: { name: "InkNest API", baseUrl: env.BASE_URL },
-      message: "API is running",
-    }),
-  );
+export const app = new Elysia({
+	prefix: "/api",
+	// Sites runs on Cloudflare Workers, where runtime string compilation is blocked.
+	aot: false,
+})
+	.error({ AppError })
+	.onError(handleError)
+	.use(authRoutes)
+	.use(usersRoutes)
+	.use(postsRoutes)
+	.use(commentsRoutes)
+	.use(taxonomyRoutes)
+	.use(engagementRoutes)
+	.use(notificationsRoutes)
+	.get("/", () =>
+		responseOk({
+			data: { name: "InkNest API", baseUrl: env.BASE_URL },
+			message: "API is running",
+		}),
+	);
 
 export type App = typeof app;
 
 export const handleApiRequest = async (request: Request) => {
-  const response = await app.fetch(request);
+	const response = await app.fetch(request);
 
-  if (response.status !== HttpStatusCode.NOT_FOUND) {
-    return response;
-  }
+	if (response.status !== HttpStatusCode.NOT_FOUND) {
+		return response;
+	}
 
-  const body = await response.clone().text();
+	const body = await response.clone().text();
 
-  if (body.trim() !== "") {
-    return response;
-  }
+	if (body.trim() !== "") {
+		return response;
+	}
 
-  return Response.json(
-    responseError({
-      message: "Route not found",
-      code: "NOT_FOUND",
-    }),
-    { status: HttpStatusCode.NOT_FOUND },
-  );
+	return Response.json(
+		responseError({
+			message: "Route not found",
+			code: "NOT_FOUND",
+		}),
+		{ status: HttpStatusCode.NOT_FOUND },
+	);
 };
