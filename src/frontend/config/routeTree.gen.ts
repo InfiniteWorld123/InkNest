@@ -9,13 +9,10 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './../routes/__root'
-import { Route as StudioRouteImport } from './../routes/_studio'
 import { Route as MarketingRouteImport } from './../routes/_marketing'
 import { Route as AuthRouteImport } from './../routes/_auth'
 import { Route as MarketingIndexRouteImport } from './../routes/_marketing/index'
-import { Route as ApiUploadthingRouteImport } from './../routes/api.uploadthing'
 import { Route as ApiSplatRouteImport } from './../routes/api.$'
-import { Route as StudioStudioRouteImport } from './../routes/_studio/studio'
 import { Route as MarketingUsersRouteImport } from './../routes/_marketing/users'
 import { Route as MarketingContactRouteImport } from './../routes/_marketing/contact'
 import { Route as MarketingBlogRouteImport } from './../routes/_marketing/blog'
@@ -28,10 +25,6 @@ import { Route as AuthForgotPasswordRouteImport } from './../routes/_auth/forgot
 import { Route as MarketingUsersUsernameRouteImport } from './../routes/_marketing/users_.$username'
 import { Route as MarketingBlogSlugRouteImport } from './../routes/_marketing/blog_.$slug'
 
-const StudioRoute = StudioRouteImport.update({
-  id: '/_studio',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const MarketingRoute = MarketingRouteImport.update({
   id: '/_marketing',
   getParentRoute: () => rootRouteImport,
@@ -45,20 +38,10 @@ const MarketingIndexRoute = MarketingIndexRouteImport.update({
   path: '/',
   getParentRoute: () => MarketingRoute,
 } as any)
-const ApiUploadthingRoute = ApiUploadthingRouteImport.update({
-  id: '/api/uploadthing',
-  path: '/api/uploadthing',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiSplatRoute = ApiSplatRouteImport.update({
   id: '/api/$',
   path: '/api/$',
   getParentRoute: () => rootRouteImport,
-} as any)
-const StudioStudioRoute = StudioStudioRouteImport.update({
-  id: '/studio',
-  path: '/studio',
-  getParentRoute: () => StudioRoute,
 } as any)
 const MarketingUsersRoute = MarketingUsersRouteImport.update({
   id: '/users',
@@ -127,9 +110,7 @@ export interface FileRoutesByFullPath {
   '/blog': typeof MarketingBlogRoute
   '/contact': typeof MarketingContactRoute
   '/users': typeof MarketingUsersRoute
-  '/studio': typeof StudioStudioRoute
   '/api/$': typeof ApiSplatRoute
-  '/api/uploadthing': typeof ApiUploadthingRoute
   '/blog/$slug': typeof MarketingBlogSlugRoute
   '/users/$username': typeof MarketingUsersUsernameRoute
 }
@@ -144,9 +125,7 @@ export interface FileRoutesByTo {
   '/blog': typeof MarketingBlogRoute
   '/contact': typeof MarketingContactRoute
   '/users': typeof MarketingUsersRoute
-  '/studio': typeof StudioStudioRoute
   '/api/$': typeof ApiSplatRoute
-  '/api/uploadthing': typeof ApiUploadthingRoute
   '/blog/$slug': typeof MarketingBlogSlugRoute
   '/users/$username': typeof MarketingUsersUsernameRoute
 }
@@ -154,7 +133,6 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_auth': typeof AuthRouteWithChildren
   '/_marketing': typeof MarketingRouteWithChildren
-  '/_studio': typeof StudioRouteWithChildren
   '/_auth/forgot-password': typeof AuthForgotPasswordRoute
   '/_auth/reset-password': typeof AuthResetPasswordRoute
   '/_auth/sign-in': typeof AuthSignInRoute
@@ -164,9 +142,7 @@ export interface FileRoutesById {
   '/_marketing/blog': typeof MarketingBlogRoute
   '/_marketing/contact': typeof MarketingContactRoute
   '/_marketing/users': typeof MarketingUsersRoute
-  '/_studio/studio': typeof StudioStudioRoute
   '/api/$': typeof ApiSplatRoute
-  '/api/uploadthing': typeof ApiUploadthingRoute
   '/_marketing/': typeof MarketingIndexRoute
   '/_marketing/blog_/$slug': typeof MarketingBlogSlugRoute
   '/_marketing/users_/$username': typeof MarketingUsersUsernameRoute
@@ -184,9 +160,7 @@ export interface FileRouteTypes {
     | '/blog'
     | '/contact'
     | '/users'
-    | '/studio'
     | '/api/$'
-    | '/api/uploadthing'
     | '/blog/$slug'
     | '/users/$username'
   fileRoutesByTo: FileRoutesByTo
@@ -201,16 +175,13 @@ export interface FileRouteTypes {
     | '/blog'
     | '/contact'
     | '/users'
-    | '/studio'
     | '/api/$'
-    | '/api/uploadthing'
     | '/blog/$slug'
     | '/users/$username'
   id:
     | '__root__'
     | '/_auth'
     | '/_marketing'
-    | '/_studio'
     | '/_auth/forgot-password'
     | '/_auth/reset-password'
     | '/_auth/sign-in'
@@ -220,9 +191,7 @@ export interface FileRouteTypes {
     | '/_marketing/blog'
     | '/_marketing/contact'
     | '/_marketing/users'
-    | '/_studio/studio'
     | '/api/$'
-    | '/api/uploadthing'
     | '/_marketing/'
     | '/_marketing/blog_/$slug'
     | '/_marketing/users_/$username'
@@ -231,20 +200,11 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   AuthRoute: typeof AuthRouteWithChildren
   MarketingRoute: typeof MarketingRouteWithChildren
-  StudioRoute: typeof StudioRouteWithChildren
   ApiSplatRoute: typeof ApiSplatRoute
-  ApiUploadthingRoute: typeof ApiUploadthingRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/_studio': {
-      id: '/_studio'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof StudioRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_marketing': {
       id: '/_marketing'
       path: ''
@@ -266,26 +226,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MarketingIndexRouteImport
       parentRoute: typeof MarketingRoute
     }
-    '/api/uploadthing': {
-      id: '/api/uploadthing'
-      path: '/api/uploadthing'
-      fullPath: '/api/uploadthing'
-      preLoaderRoute: typeof ApiUploadthingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/$': {
       id: '/api/$'
       path: '/api/$'
       fullPath: '/api/$'
       preLoaderRoute: typeof ApiSplatRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/_studio/studio': {
-      id: '/_studio/studio'
-      path: '/studio'
-      fullPath: '/studio'
-      preLoaderRoute: typeof StudioStudioRouteImport
-      parentRoute: typeof StudioRoute
     }
     '/_marketing/users': {
       id: '/_marketing/users'
@@ -409,23 +355,10 @@ const MarketingRouteWithChildren = MarketingRoute._addFileChildren(
   MarketingRouteChildren,
 )
 
-interface StudioRouteChildren {
-  StudioStudioRoute: typeof StudioStudioRoute
-}
-
-const StudioRouteChildren: StudioRouteChildren = {
-  StudioStudioRoute: StudioStudioRoute,
-}
-
-const StudioRouteWithChildren =
-  StudioRoute._addFileChildren(StudioRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRouteWithChildren,
   MarketingRoute: MarketingRouteWithChildren,
-  StudioRoute: StudioRouteWithChildren,
   ApiSplatRoute: ApiSplatRoute,
-  ApiUploadthingRoute: ApiUploadthingRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

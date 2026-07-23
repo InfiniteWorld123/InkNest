@@ -23,8 +23,6 @@ export const env = {
 
 	BASE_URL: getEnvVar("BASE_URL"),
 
-	UPLOADTHING_TOKEN: getOptionalEnvVar("UPLOADTHING_TOKEN"),
-
 	GITHUB_CLIENT_ID: getOptionalEnvVar("GITHUB_CLIENT_ID"),
 	GITHUB_CLIENT_SECRET: getOptionalEnvVar("GITHUB_CLIENT_SECRET"),
 	GOOGLE_CLIENT_ID: getOptionalEnvVar("GOOGLE_CLIENT_ID"),

@@ -40,7 +40,7 @@ export function SignIn() {
 
 			try {
 				await signIn.mutateAsync(value);
-				await navigate({ to: "/studio" });
+				await navigate({ to: "/" });
 			} catch (error) {
 				setSubmissionError(
 					getCaughtErrorMessage(error, "Unable to sign in. Please try again."),

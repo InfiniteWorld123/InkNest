@@ -1,6 +1,5 @@
 @import "tailwindcss";
 @import "@heroui/styles";
-@import "@uploadthing/react/styles.css";
 @plugin "@tailwindcss/typography";
 
 @theme {

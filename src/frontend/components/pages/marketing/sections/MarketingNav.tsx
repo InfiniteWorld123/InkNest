@@ -75,12 +75,6 @@ export function MarketingNav() {
 							<span className="max-w-40 truncate text-sm font-medium text-slate-700 dark:text-slate-200">
 								{session.user.name}
 							</span>
-							<Link
-								to="/studio"
-								className={buttonVariants({ variant: "secondary", size: "sm" })}
-							>
-								Writer Studio
-							</Link>
 							<Button
 								type="button"
 								variant="ghost"
@@ -147,16 +141,6 @@ export function MarketingNav() {
 								<p className="px-3 text-sm font-medium text-slate-700 dark:text-slate-200">
 									Signed in as {session.user.name}
 								</p>
-								<Link
-									to="/studio"
-									onClick={() => setOpen(false)}
-									className={buttonVariants({
-										variant: "secondary",
-										fullWidth: true,
-									})}
-								>
-									Writer Studio
-								</Link>
 								<Button
 									type="button"
 									variant="secondary"

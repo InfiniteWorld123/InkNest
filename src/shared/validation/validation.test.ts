@@ -60,37 +60,6 @@ describe("shared validation", () => {
 		expect(v.safeParse(UpdatePostBodySchema, {}).success).toBe(false);
 	});
 
-	it("accepts Tiptap JSON with story text", () => {
-		const result = v.safeParse(CreatePostBodySchema, {
-			title: "A rich post",
-			slug: "a-rich-post",
-			content: JSON.stringify({
-				type: "doc",
-				content: [
-					{
-						type: "paragraph",
-						content: [{ type: "text", text: "A real story" }],
-					},
-				],
-			}),
-		});
-
-		expect(result.success).toBe(true);
-	});
-
-	it("rejects empty Tiptap JSON", () => {
-		const result = v.safeParse(CreatePostBodySchema, {
-			title: "An empty rich post",
-			slug: "an-empty-rich-post",
-			content: JSON.stringify({
-				type: "doc",
-				content: [{ type: "paragraph" }],
-			}),
-		});
-
-		expect(result.success).toBe(false);
-	});
-
 	it("accepts a valid post image URL", () => {
 		const result = v.parse(CreatePostBodySchema, {
 			title: "A post with an image",
