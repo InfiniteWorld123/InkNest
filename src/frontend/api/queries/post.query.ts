@@ -10,7 +10,6 @@ import type {
 	UpdatePostBody,
 } from "#/shared/types/post.type";
 import { getErrorMessage } from "../utils";
-import { userKeys } from "./users.query";
 
 export type PublicPost = {
 	id: number;
@@ -102,6 +101,7 @@ export const postBySlugQueryOptions = (slug: string) =>
 export const currentUserPostsQueryOptions = () =>
 	queryOptions({
 		queryKey: postKeys.mine(),
+		staleTime: 15_000,
 		queryFn: async () => {
 			const result = await safe_API().users.me.posts.get();
 
@@ -111,7 +111,7 @@ export const currentUserPostsQueryOptions = () =>
 				);
 			}
 
-			return result.data;
+			return result.data.data as OwnPost[];
 		},
 	});
 
@@ -128,40 +128,8 @@ export const createPostMutation = () => {
 
 			return result.data;
 		},
-		onMutate: async (body) => {
-			await queryClient.cancelQueries({ queryKey: postKeys.mine() });
-
-			const previousMine = queryClient.getQueryData<OwnPost[]>(postKeys.mine());
-			const authorId =
-				queryClient.getQueryData<{ id: string }>(userKeys.me())?.id ?? "";
-
-			queryClient.setQueryData<OwnPost[]>(postKeys.mine(), (old = []) => [
-				{
-					id: -Date.now(),
-					authorId,
-					title: body.title,
-					slug: body.slug,
-					image: body.image ?? null,
-					content: body.content,
-					status: body.status ?? "draft",
-					publishedAt: body.publishedAt ?? null,
-					createdAt: new Date(),
-					updatedAt: new Date(),
-				},
-				...old,
-			]);
-
-			return { previousMine };
-		},
-		onError: (error, _body, context) => {
-			if (context?.previousMine) {
-				queryClient.setQueryData(postKeys.mine(), context.previousMine);
-			}
-
-			console.log(error.message);
-		},
-		onSettled: () => {
-			queryClient.invalidateQueries({ queryKey: postKeys.all });
+		onSuccess: async () => {
+			await queryClient.invalidateQueries({ queryKey: postKeys.all });
 		},
 	});
 };
@@ -185,62 +153,8 @@ export const updatePostMutation = () => {
 
 			return result.data;
 		},
-		onMutate: async ({ postId, body }) => {
-			await queryClient.cancelQueries({ queryKey: postKeys.all });
-
-			const previousMine = queryClient.getQueryData<OwnPost[]>(postKeys.mine());
-			const previousLists = queryClient.getQueriesData<PublicPost[]>({
-				queryKey: postKeys.lists(),
-			});
-			const previousDetails = queryClient.getQueriesData<PublicPost>({
-				queryKey: postKeys.details(),
-			});
-
-			queryClient.setQueryData<OwnPost[]>(postKeys.mine(), (old) =>
-				old?.map((post) =>
-					post.id === postId
-						? { ...post, ...body, updatedAt: new Date() }
-						: post,
-				),
-			);
-
-			queryClient.setQueriesData<PublicPost[]>(
-				{ queryKey: postKeys.lists() },
-				(old) =>
-					old?.map((post) =>
-						post.id === postId
-							? { ...post, ...body, updatedAt: new Date() }
-							: post,
-					),
-			);
-
-			queryClient.setQueriesData<PublicPost>(
-				{ queryKey: postKeys.details() },
-				(old) =>
-					old && old.id === postId
-						? { ...old, ...body, updatedAt: new Date() }
-						: old,
-			);
-
-			return { previousMine, previousLists, previousDetails };
-		},
-		onError: (error, _variables, context) => {
-			if (context?.previousMine) {
-				queryClient.setQueryData(postKeys.mine(), context.previousMine);
-			}
-
-			for (const [key, data] of context?.previousLists ?? []) {
-				queryClient.setQueryData(key, data);
-			}
-
-			for (const [key, data] of context?.previousDetails ?? []) {
-				queryClient.setQueryData(key, data);
-			}
-
-			console.log(error.message);
-		},
-		onSettled: () => {
-			queryClient.invalidateQueries({ queryKey: postKeys.all });
+		onSuccess: async () => {
+			await queryClient.invalidateQueries({ queryKey: postKeys.all });
 		},
 	});
 };
@@ -258,38 +172,8 @@ export const deletePostMutation = () => {
 
 			return result.data;
 		},
-		onMutate: async ({ postId }) => {
-			await queryClient.cancelQueries({ queryKey: postKeys.all });
-
-			const previousMine = queryClient.getQueryData<OwnPost[]>(postKeys.mine());
-			const previousLists = queryClient.getQueriesData<PublicPost[]>({
-				queryKey: postKeys.lists(),
-			});
-
-			queryClient.setQueryData<OwnPost[]>(postKeys.mine(), (old) =>
-				old?.filter((post) => post.id !== postId),
-			);
-
-			queryClient.setQueriesData<PublicPost[]>(
-				{ queryKey: postKeys.lists() },
-				(old) => old?.filter((post) => post.id !== postId),
-			);
-
-			return { previousMine, previousLists };
-		},
-		onError: (error, _variables, context) => {
-			if (context?.previousMine) {
-				queryClient.setQueryData(postKeys.mine(), context.previousMine);
-			}
-
-			for (const [key, data] of context?.previousLists ?? []) {
-				queryClient.setQueryData(key, data);
-			}
-
-			console.log(error.message);
-		},
-		onSettled: () => {
-			queryClient.invalidateQueries({ queryKey: postKeys.all });
+		onSuccess: async () => {
+			await queryClient.invalidateQueries({ queryKey: postKeys.all });
 		},
 	});
 };

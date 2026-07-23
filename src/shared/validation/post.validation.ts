@@ -12,11 +12,49 @@ const TitleSchema = v.pipe(
 	v.maxLength(200, "Post title must be 200 characters or fewer"),
 );
 
+const tiptapNodeHasText = (node: unknown): boolean => {
+	if (typeof node !== "object" || node === null) return false;
+
+	if (
+		"text" in node &&
+		typeof node.text === "string" &&
+		node.text.trim() !== ""
+	) {
+		return true;
+	}
+
+	return (
+		"content" in node &&
+		Array.isArray(node.content) &&
+		node.content.some(tiptapNodeHasText)
+	);
+};
+
+const hasPostContent = (content: string): boolean => {
+	try {
+		const parsed: unknown = JSON.parse(content);
+
+		if (
+			typeof parsed === "object" &&
+			parsed !== null &&
+			"type" in parsed &&
+			parsed.type === "doc"
+		) {
+			return tiptapNodeHasText(parsed);
+		}
+	} catch {
+		// Existing posts use plain text, which stays valid during this migration.
+	}
+
+	return true;
+};
+
 const ContentSchema = v.pipe(
 	v.string(),
 	v.trim(),
 	v.minLength(1, "Post content is required"),
 	v.maxLength(100_000, "Post content is too long"),
+	v.check(hasPostContent, "Post content is required"),
 );
 
 const ImageSchema = v.pipe(
