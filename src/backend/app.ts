@@ -1,3 +1,4 @@
+import "./shared/runtime";
 import { Elysia } from "elysia";
 import { env } from "#/shared/env";
 import { authRoutes } from "./modules/auth/auth.route";
