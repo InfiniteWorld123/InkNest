@@ -8,5 +8,6 @@ export const Route = createFileRoute("/_auth/sign-in")({
 	validateSearch: v.object({
 		email: v.optional(EmailSchema),
 		notice: v.optional(v.picklist(["verified", "password-reset"])),
+		redirect: v.optional(v.literal("/studio")),
 	}),
 });

@@ -1,8 +1,21 @@
+import { useState } from "react";
+import type { OwnPost } from "#/frontend/api/queries/post.query";
 import { CreatePostSection } from "../sections/CreatePostSection";
-import { PostManagementSection } from "../sections/PostManagementSection";
+import { PostManagementBoundary } from "../sections/PostManagementSection";
 import { StudioHeader } from "../sections/StudioHeader";
 
 export function WriterStudioPage() {
+	const [editingPost, setEditingPost] = useState<OwnPost | null>(null);
+
+	const editPost = (post: OwnPost) => {
+		setEditingPost(post);
+		requestAnimationFrame(() => {
+			document
+				.getElementById("studio-editor")
+				?.scrollIntoView({ behavior: "smooth", block: "start" });
+		});
+	};
+
 	return (
 		<div className="min-h-screen bg-slate-50 dark:bg-slate-950">
 			<StudioHeader />
@@ -15,25 +28,30 @@ export function WriterStudioPage() {
 						Shape your next story.
 					</h1>
 					<p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg dark:text-slate-300">
-						This is a static dashboard preview. It does not call your backend,
-						save posts, delete posts, or upload files.
+						Draft, publish, and manage your stories from one focused workspace.
 					</p>
 				</header>
 
 				<div className="mt-10 grid items-start gap-8 xl:grid-cols-[minmax(22rem,0.8fr)_minmax(0,1.6fr)]">
-					<CreatePostSection />
-					<PostManagementSection />
+					<CreatePostSection
+						editingPost={editingPost}
+						onCancelEdit={() => setEditingPost(null)}
+					/>
+					<PostManagementBoundary
+						editingPostId={editingPost?.id ?? null}
+						onEdit={editPost}
+						onPostUpdated={(postId, changes) => {
+							setEditingPost((current) =>
+								current?.id === postId ? { ...current, ...changes } : current,
+							);
+						}}
+						onDeleted={(postId) => {
+							if (editingPost?.id === postId) {
+								setEditingPost(null);
+							}
+						}}
+					/>
 				</div>
-
-				{/*
-					FUTURE PROTECTION:
-					Add a session check in the /studio route beforeLoad function.
-					If there is no user session, redirect to /sign-in.
-
-					PUBLIC POST NOTE:
-					The current public post page expects plain text. Before saving Tiptap
-					JSON, update that page to parse and safely render the JSON document.
-				*/}
 			</main>
 		</div>
 	);

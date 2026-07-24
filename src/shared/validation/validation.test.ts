@@ -60,6 +60,19 @@ describe("shared validation", () => {
 		expect(v.safeParse(UpdatePostBodySchema, {}).success).toBe(false);
 	});
 
+	it("rejects a post with an empty rich-text document", () => {
+		expect(
+			v.safeParse(CreatePostBodySchema, {
+				title: "An empty post",
+				slug: "an-empty-post",
+				content: JSON.stringify({
+					type: "doc",
+					content: [{ type: "paragraph" }],
+				}),
+			}).success,
+		).toBe(false);
+	});
+
 	it("accepts a valid post image URL", () => {
 		const result = v.parse(CreatePostBodySchema, {
 			title: "A post with an image",

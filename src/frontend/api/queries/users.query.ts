@@ -70,7 +70,7 @@ export const currentUserQueryOptions = () =>
 				);
 			}
 
-			return result.data;
+			return result.data.data as CurrentUser;
 		},
 	});
 

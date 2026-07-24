@@ -13,6 +13,7 @@ import { Route as StudioRouteImport } from './../routes/studio'
 import { Route as MarketingRouteImport } from './../routes/_marketing'
 import { Route as AuthRouteImport } from './../routes/_auth'
 import { Route as MarketingIndexRouteImport } from './../routes/_marketing/index'
+import { Route as ApiUploadthingRouteImport } from './../routes/api.uploadthing'
 import { Route as ApiSplatRouteImport } from './../routes/api.$'
 import { Route as MarketingUsersRouteImport } from './../routes/_marketing/users'
 import { Route as MarketingContactRouteImport } from './../routes/_marketing/contact'
@@ -43,6 +44,11 @@ const MarketingIndexRoute = MarketingIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => MarketingRoute,
+} as any)
+const ApiUploadthingRoute = ApiUploadthingRouteImport.update({
+  id: '/api/uploadthing',
+  path: '/api/uploadthing',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiSplatRoute = ApiSplatRouteImport.update({
   id: '/api/$',
@@ -118,6 +124,7 @@ export interface FileRoutesByFullPath {
   '/contact': typeof MarketingContactRoute
   '/users': typeof MarketingUsersRoute
   '/api/$': typeof ApiSplatRoute
+  '/api/uploadthing': typeof ApiUploadthingRoute
   '/blog/$slug': typeof MarketingBlogSlugRoute
   '/users/$username': typeof MarketingUsersUsernameRoute
 }
@@ -134,6 +141,7 @@ export interface FileRoutesByTo {
   '/contact': typeof MarketingContactRoute
   '/users': typeof MarketingUsersRoute
   '/api/$': typeof ApiSplatRoute
+  '/api/uploadthing': typeof ApiUploadthingRoute
   '/blog/$slug': typeof MarketingBlogSlugRoute
   '/users/$username': typeof MarketingUsersUsernameRoute
 }
@@ -152,6 +160,7 @@ export interface FileRoutesById {
   '/_marketing/contact': typeof MarketingContactRoute
   '/_marketing/users': typeof MarketingUsersRoute
   '/api/$': typeof ApiSplatRoute
+  '/api/uploadthing': typeof ApiUploadthingRoute
   '/_marketing/': typeof MarketingIndexRoute
   '/_marketing/blog_/$slug': typeof MarketingBlogSlugRoute
   '/_marketing/users_/$username': typeof MarketingUsersUsernameRoute
@@ -171,6 +180,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/users'
     | '/api/$'
+    | '/api/uploadthing'
     | '/blog/$slug'
     | '/users/$username'
   fileRoutesByTo: FileRoutesByTo
@@ -187,6 +197,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/users'
     | '/api/$'
+    | '/api/uploadthing'
     | '/blog/$slug'
     | '/users/$username'
   id:
@@ -204,6 +215,7 @@ export interface FileRouteTypes {
     | '/_marketing/contact'
     | '/_marketing/users'
     | '/api/$'
+    | '/api/uploadthing'
     | '/_marketing/'
     | '/_marketing/blog_/$slug'
     | '/_marketing/users_/$username'
@@ -214,6 +226,7 @@ export interface RootRouteChildren {
   MarketingRoute: typeof MarketingRouteWithChildren
   StudioRoute: typeof StudioRoute
   ApiSplatRoute: typeof ApiSplatRoute
+  ApiUploadthingRoute: typeof ApiUploadthingRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -245,6 +258,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof MarketingIndexRouteImport
       parentRoute: typeof MarketingRoute
+    }
+    '/api/uploadthing': {
+      id: '/api/uploadthing'
+      path: '/api/uploadthing'
+      fullPath: '/api/uploadthing'
+      preLoaderRoute: typeof ApiUploadthingRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/$': {
       id: '/api/$'
@@ -380,6 +400,7 @@ const rootRouteChildren: RootRouteChildren = {
   MarketingRoute: MarketingRouteWithChildren,
   StudioRoute: StudioRoute,
   ApiSplatRoute: ApiSplatRoute,
+  ApiUploadthingRoute: ApiUploadthingRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

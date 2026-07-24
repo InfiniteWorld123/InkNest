@@ -50,7 +50,10 @@ export const listPostsService = async ({
 	page = 1,
 	limit = 10,
 }: ListPostsQuery) => {
-	const conditions: SQL[] = [sql`p.status = 'published'`];
+	const conditions: SQL[] = [
+		sql`p.status = 'published'`,
+		sql`p.published_at <= NOW()`,
+	];
 
 	if (search) {
 		const searchTerm = `%${search}%`;
@@ -202,6 +205,7 @@ export const getPostBySlugService = async (params: GetPostBySlugParams) => {
 			ON bookmark_count.post_id = p.id
 		WHERE p.slug = ${params.slug}
 			AND p.status = 'published'
+			AND p.published_at <= NOW()
 	`);
 
 	return requireFound(result.rows[0], "Post not found");

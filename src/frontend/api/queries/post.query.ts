@@ -39,6 +39,19 @@ export type PostsPagination = {
 	hasNextPage: boolean;
 };
 
+export type PostsListData = {
+	data: PublicPost[];
+	pagination: PostsPagination;
+	success: true;
+	message: string;
+};
+
+export type PostDetailData = {
+	data: PublicPost;
+	success: true;
+	message: string;
+};
+
 export type OwnPost = {
 	id: number;
 	authorId: string;
@@ -77,7 +90,7 @@ export const listPostsQueryOptions = (query: ListPostsQuery = {}) =>
 				pagination: result.data.data.pagination as PostsPagination,
 				success: result.data.success,
 				message: result.data.message,
-			};
+			} satisfies PostsListData;
 		},
 	});
 
@@ -95,7 +108,7 @@ export const postBySlugQueryOptions = (slug: string) =>
 			return {
 				...result.data,
 				data: result.data.data as PublicPost,
-			};
+			} satisfies PostDetailData;
 		},
 	});
 
@@ -111,7 +124,7 @@ export const currentUserPostsQueryOptions = () =>
 				);
 			}
 
-			return result.data;
+			return result.data.data as OwnPost[];
 		},
 	});
 
@@ -189,13 +202,6 @@ export const updatePostMutation = () => {
 			await queryClient.cancelQueries({ queryKey: postKeys.all });
 
 			const previousMine = queryClient.getQueryData<OwnPost[]>(postKeys.mine());
-			const previousLists = queryClient.getQueriesData<PublicPost[]>({
-				queryKey: postKeys.lists(),
-			});
-			const previousDetails = queryClient.getQueriesData<PublicPost>({
-				queryKey: postKeys.details(),
-			});
-
 			queryClient.setQueryData<OwnPost[]>(postKeys.mine(), (old) =>
 				old?.map((post) =>
 					post.id === postId
@@ -204,37 +210,11 @@ export const updatePostMutation = () => {
 				),
 			);
 
-			queryClient.setQueriesData<PublicPost[]>(
-				{ queryKey: postKeys.lists() },
-				(old) =>
-					old?.map((post) =>
-						post.id === postId
-							? { ...post, ...body, updatedAt: new Date() }
-							: post,
-					),
-			);
-
-			queryClient.setQueriesData<PublicPost>(
-				{ queryKey: postKeys.details() },
-				(old) =>
-					old && old.id === postId
-						? { ...old, ...body, updatedAt: new Date() }
-						: old,
-			);
-
-			return { previousMine, previousLists, previousDetails };
+			return { previousMine };
 		},
 		onError: (error, _variables, context) => {
 			if (context?.previousMine) {
 				queryClient.setQueryData(postKeys.mine(), context.previousMine);
-			}
-
-			for (const [key, data] of context?.previousLists ?? []) {
-				queryClient.setQueryData(key, data);
-			}
-
-			for (const [key, data] of context?.previousDetails ?? []) {
-				queryClient.setQueryData(key, data);
 			}
 
 			console.log(error.message);
@@ -262,28 +242,15 @@ export const deletePostMutation = () => {
 			await queryClient.cancelQueries({ queryKey: postKeys.all });
 
 			const previousMine = queryClient.getQueryData<OwnPost[]>(postKeys.mine());
-			const previousLists = queryClient.getQueriesData<PublicPost[]>({
-				queryKey: postKeys.lists(),
-			});
-
 			queryClient.setQueryData<OwnPost[]>(postKeys.mine(), (old) =>
 				old?.filter((post) => post.id !== postId),
 			);
 
-			queryClient.setQueriesData<PublicPost[]>(
-				{ queryKey: postKeys.lists() },
-				(old) => old?.filter((post) => post.id !== postId),
-			);
-
-			return { previousMine, previousLists };
+			return { previousMine };
 		},
 		onError: (error, _variables, context) => {
 			if (context?.previousMine) {
 				queryClient.setQueryData(postKeys.mine(), context.previousMine);
-			}
-
-			for (const [key, data] of context?.previousLists ?? []) {
-				queryClient.setQueryData(key, data);
 			}
 
 			console.log(error.message);

@@ -14,6 +14,7 @@ interface SelectProps {
 	value?: string;
 	defaultValue?: string;
 	onValueChange?: (value: string) => void;
+	onBlur?: () => void;
 	isDisabled?: boolean;
 	isRequired?: boolean;
 	className?: string;
@@ -30,6 +31,7 @@ export function Select({
 	value,
 	defaultValue,
 	onValueChange,
+	onBlur,
 	isDisabled,
 	isRequired,
 	className,
@@ -49,6 +51,7 @@ export function Select({
 			onSelectionChange={(key) =>
 				onValueChange?.(key === null ? "" : String(key))
 			}
+			onBlur={onBlur}
 			isDisabled={isDisabled}
 			isRequired={isRequired}
 			aria-label={ariaLabel ?? label}

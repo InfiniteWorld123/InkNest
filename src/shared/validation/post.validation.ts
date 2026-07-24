@@ -3,31 +3,33 @@ import {
 	PositiveIntegerPathParamSchema,
 	PositiveIntegerQueryStringSchema,
 } from "./common.validation";
+import { hasMeaningfulPostContent } from "../post-content";
 import { SlugSchema } from "./taxonomy.validation";
 
-const TitleSchema = v.pipe(
+export const PostTitleSchema = v.pipe(
 	v.string(),
 	v.trim(),
 	v.minLength(1, "Post title is required"),
 	v.maxLength(200, "Post title must be 200 characters or fewer"),
 );
 
-const ContentSchema = v.pipe(
+export const PostContentSchema = v.pipe(
 	v.string(),
 	v.trim(),
 	v.minLength(1, "Post content is required"),
 	v.maxLength(100_000, "Post content is too long"),
+	v.check(hasMeaningfulPostContent, "Write some story content before saving"),
 );
 
-const ImageSchema = v.pipe(
+export const PostImageSchema = v.pipe(
 	v.string(),
 	v.trim(),
 	v.url("Post image must be a valid URL"),
 );
 
-const PostStatusSchema = v.picklist(["draft", "published", "archived"]);
+export const PostStatusSchema = v.picklist(["draft", "published", "archived"]);
 
-const PublishedAtSchema = v.pipe(
+export const PublishedAtSchema = v.pipe(
 	v.string(),
 	v.isoTimestamp("Published date must be a valid ISO timestamp"),
 	v.toDate(),
@@ -71,20 +73,20 @@ export const PostIdParamsSchema = v.object({
 });
 
 export const CreatePostBodySchema = v.object({
-	title: TitleSchema,
+	title: PostTitleSchema,
 	slug: SlugSchema,
-	image: v.optional(v.nullable(ImageSchema)),
-	content: ContentSchema,
+	image: v.optional(v.nullable(PostImageSchema)),
+	content: PostContentSchema,
 	status: v.optional(PostStatusSchema),
 	publishedAt: v.optional(v.nullable(PublishedAtSchema)),
 });
 
 export const UpdatePostBodySchema = v.pipe(
 	v.object({
-		title: v.optional(TitleSchema),
+		title: v.optional(PostTitleSchema),
 		slug: v.optional(SlugSchema),
-		image: v.optional(v.nullable(ImageSchema)),
-		content: v.optional(ContentSchema),
+		image: v.optional(v.nullable(PostImageSchema)),
+		content: v.optional(PostContentSchema),
 		status: v.optional(PostStatusSchema),
 		publishedAt: v.optional(v.nullable(PublishedAtSchema)),
 	}),
