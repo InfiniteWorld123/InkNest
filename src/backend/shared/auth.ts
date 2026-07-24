@@ -8,6 +8,7 @@ import {
 	NameSchema,
 	PasswordSchema,
 } from "#/shared/validation/auth.validation";
+import { createGeneratedUsername } from "#/shared/username";
 import { db } from "../db/index";
 import * as schema from "../db/schema/tables";
 import {
@@ -58,6 +59,29 @@ export const auth = betterAuth({
 		provider: "pg",
 		schema,
 	}),
+	user: {
+		additionalFields: {
+			username: {
+				type: "string",
+				required: false,
+				input: false,
+				returned: true,
+			},
+		},
+	},
+	databaseHooks: {
+		user: {
+			create: {
+				before: (newUser) =>
+					Promise.resolve({
+						data: {
+							...newUser,
+							username: createGeneratedUsername(newUser.name, newUser.id),
+						},
+					}),
+			},
+		},
+	},
 	emailAndPassword: {
 		enabled: true,
 		requireEmailVerification: true,

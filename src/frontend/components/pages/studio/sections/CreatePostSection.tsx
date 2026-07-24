@@ -1,15 +1,6 @@
-import {
-	Alert,
-	Button,
-	Card,
-	Description,
-	FieldError,
-	Form,
-	Input,
-	Label,
-} from "@heroui/react";
+import { Alert, Button, Card, FieldError, Form, Label } from "@heroui/react";
 import { useForm } from "@tanstack/react-form";
-import { PenLine, Save, X } from "lucide-react";
+import { Save, Send, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import * as v from "valibot";
 import {
@@ -18,7 +9,6 @@ import {
 	updatePostMutation,
 } from "#/frontend/api/queries/post.query";
 import { getCaughtErrorMessage } from "#/frontend/api/utils";
-import { Select } from "#/frontend/components/shared/ui/Select";
 import { TextField } from "#/frontend/components/shared/ui/TextField";
 import {
 	EMPTY_POST_CONTENT,
@@ -28,7 +18,6 @@ import type { CreatePostBody } from "#/shared/types/post.type";
 import {
 	PostContentSchema,
 	PostImageSchema,
-	PostStatusSchema,
 	PostTitleSchema,
 } from "#/shared/validation/post.validation";
 import { SlugSchema } from "#/shared/validation/taxonomy.validation";
@@ -40,8 +29,6 @@ type StudioPostFormValues = {
 	slug: string;
 	image: string | null;
 	content: string;
-	status: "draft" | "published" | "archived";
-	publishedAt: Date | null;
 };
 
 const StudioPostFormSchema = v.object({
@@ -49,18 +36,14 @@ const StudioPostFormSchema = v.object({
 	slug: SlugSchema,
 	image: v.nullable(PostImageSchema),
 	content: PostContentSchema,
-	status: PostStatusSchema,
-	publishedAt: v.nullable(v.date("Publish date must be valid")),
 });
 
-const emptyFormValues: StudioPostFormValues = {
+const createEmptyFormValues = (): StudioPostFormValues => ({
 	title: "",
 	slug: "",
 	image: null,
 	content: EMPTY_POST_CONTENT,
-	status: "draft",
-	publishedAt: null,
-};
+});
 
 const slugify = (value: string) =>
 	value
@@ -71,20 +54,9 @@ const slugify = (value: string) =>
 		.slice(0, 120)
 		.replace(/-+$/g, "");
 
-const toDateTimeLocalValue = (date: Date | null) => {
-	if (!date || Number.isNaN(date.getTime())) {
-		return "";
-	}
-
-	const localDate = new Date(
-		date.getTime() - date.getTimezoneOffset() * 60_000,
-	);
-	return localDate.toISOString().slice(0, 16);
-};
-
 const toFormValues = (post: OwnPost | null): StudioPostFormValues => {
 	if (!post) {
-		return emptyFormValues;
+		return createEmptyFormValues();
 	}
 
 	return {
@@ -92,8 +64,6 @@ const toFormValues = (post: OwnPost | null): StudioPostFormValues => {
 		slug: post.slug,
 		image: post.image,
 		content: normalizePostContentForEditor(post.content),
-		status: post.status,
-		publishedAt: post.publishedAt ? new Date(post.publishedAt) : null,
 	};
 };
 
@@ -114,6 +84,7 @@ export function CreatePostSection({
 	const [submissionError, setSubmissionError] = useState<string | null>(null);
 	const [successMessage, setSuccessMessage] = useState<string | null>(null);
 	const [isImageUploading, setIsImageUploading] = useState(false);
+	const [editorRevision, setEditorRevision] = useState(0);
 	const isEditing = editingPost !== null;
 	const isSaving = createPost.isPending || updatePost.isPending;
 
@@ -126,25 +97,25 @@ export function CreatePostSection({
 			setSubmissionError(null);
 			setSuccessMessage(null);
 
-			const body: CreatePostBody = value;
-
 			try {
 				if (editingPost) {
 					await updatePost.mutateAsync({
 						postId: editingPost.id,
-						body,
+						body: value,
 					});
-					form.reset(emptyFormValues);
+					form.reset(createEmptyFormValues());
 					onCancelEdit();
 					setSuccessMessage("Your changes were saved.");
 				} else {
+					const body: CreatePostBody = {
+						...value,
+						status: "published",
+					};
+
 					await createPost.mutateAsync(body);
-					form.reset(emptyFormValues);
-					setSuccessMessage(
-						value.status === "published"
-							? "Your story is now published."
-							: "Your story was saved.",
-					);
+					form.reset(createEmptyFormValues());
+					setEditorRevision((revision) => revision + 1);
+					setSuccessMessage("Your story is now published.");
 				}
 			} catch (error) {
 				setSubmissionError(
@@ -168,7 +139,7 @@ export function CreatePostSection({
 	}, [editingPost, form]);
 
 	const cancelEditing = () => {
-		form.reset(emptyFormValues);
+		form.reset(createEmptyFormValues());
 		setSubmissionError(null);
 		setSuccessMessage(null);
 		onCancelEdit();
@@ -304,62 +275,6 @@ export function CreatePostSection({
 						)}
 					</form.Field>
 
-					<div className="grid gap-5 sm:grid-cols-2">
-						<form.Field name="status">
-							{(field) => (
-								<Select
-									name={field.name}
-									label="Status"
-									value={field.state.value}
-									onValueChange={(status) =>
-										field.handleChange(status as StudioPostFormValues["status"])
-									}
-									onBlur={field.handleBlur}
-									isDisabled={isSaving}
-									options={[
-										{ value: "draft", label: "Draft" },
-										{ value: "published", label: "Published" },
-										{ value: "archived", label: "Archived" },
-									]}
-								/>
-							)}
-						</form.Field>
-
-						<form.Field name="publishedAt">
-							{(field) => (
-								<div>
-									<Label htmlFor="studio-published-at">Publish date</Label>
-									<Input
-										id="studio-published-at"
-										name={field.name}
-										type="datetime-local"
-										value={toDateTimeLocalValue(field.state.value)}
-										onChange={(event) =>
-											field.handleChange(
-												event.target.value
-													? new Date(event.target.value)
-													: null,
-											)
-										}
-										onBlur={field.handleBlur}
-										disabled={isSaving}
-										aria-invalid={
-											field.state.meta.isTouched &&
-											field.state.meta.errors.length > 0
-										}
-									/>
-									<Description>Leave empty to publish immediately.</Description>
-									{field.state.meta.isTouched &&
-									field.state.meta.errors.length > 0 ? (
-										<FieldError>
-											{fieldMessages(field.state.meta.errors)[0]}
-										</FieldError>
-									) : null}
-								</div>
-							)}
-						</form.Field>
-					</div>
-
 					<form.Field name="content">
 						{(field) => {
 							const messages = fieldMessages(field.state.meta.errors);
@@ -370,6 +285,7 @@ export function CreatePostSection({
 								<div>
 									<Label className="mb-2 block">Story content</Label>
 									<RichTextEditor
+										key={`${editingPost?.id ?? "new"}-${editorRevision}`}
 										value={field.state.value}
 										onChange={field.handleChange}
 										onBlur={field.handleBlur}
@@ -391,15 +307,17 @@ export function CreatePostSection({
 						{isEditing ? (
 							<Save size={17} aria-hidden="true" />
 						) : (
-							<PenLine size={17} aria-hidden="true" />
+							<Send size={17} aria-hidden="true" />
 						)}
 						{isSaving
-							? "Saving…"
+							? isEditing
+								? "Saving…"
+								: "Publishing…"
 							: isImageUploading
 								? "Waiting for image upload…"
 								: isEditing
 									? "Save changes"
-									: "Create post"}
+									: "Publish post"}
 					</Button>
 				</Form>
 			</Card.Content>

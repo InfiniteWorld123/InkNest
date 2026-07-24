@@ -28,7 +28,7 @@ export function WriterStudioPage() {
 						Shape your next story.
 					</h1>
 					<p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg dark:text-slate-300">
-						Draft, publish, and manage your stories from one focused workspace.
+						Publish and manage your stories from one focused workspace.
 					</p>
 				</header>
 
@@ -40,11 +40,6 @@ export function WriterStudioPage() {
 					<PostManagementBoundary
 						editingPostId={editingPost?.id ?? null}
 						onEdit={editPost}
-						onPostUpdated={(postId, changes) => {
-							setEditingPost((current) =>
-								current?.id === postId ? { ...current, ...changes } : current,
-							);
-						}}
 						onDeleted={(postId) => {
 							if (editingPost?.id === postId) {
 								setEditingPost(null);

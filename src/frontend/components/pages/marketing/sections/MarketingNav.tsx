@@ -25,6 +25,9 @@ export function MarketingNav() {
 	const { data: session } = useQuery(sessionQueryOptions());
 	const signOut = useSignOutMutation();
 	const prefetchRoute = usePrefetchMarketingRoute();
+	const visibleLinks = session
+		? links
+		: links.filter((link) => link.to !== "/studio");
 
 	const handleSignOut = async () => {
 		setSignOutError(null);
@@ -52,7 +55,7 @@ export function MarketingNav() {
 				</Link>
 
 				<nav className="hidden items-center gap-1 md:flex">
-					{links.map((link) => (
+					{visibleLinks.map((link) => (
 						<Link
 							key={link.to}
 							to={link.to}
@@ -123,7 +126,7 @@ export function MarketingNav() {
 			{open ? (
 				<div className="border-t border-slate-200 px-5 py-4 md:hidden dark:border-slate-800">
 					<nav className="flex flex-col gap-1">
-						{links.map((link) => (
+						{visibleLinks.map((link) => (
 							<Link
 								key={link.to}
 								to={link.to}

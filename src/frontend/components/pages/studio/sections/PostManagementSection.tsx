@@ -12,20 +12,12 @@ import {
 	useSuspenseQuery,
 } from "@tanstack/react-query";
 import { CatchBoundary } from "@tanstack/react-router";
-import {
-	Archive,
-	FilePenLine,
-	FileText,
-	RotateCcw,
-	Send,
-	Trash2,
-} from "lucide-react";
+import { FilePenLine, FileText, Trash2 } from "lucide-react";
 import { Suspense, useState } from "react";
 import {
 	currentUserPostsQueryOptions,
 	deletePostMutation,
 	type OwnPost,
-	updatePostMutation,
 } from "#/frontend/api/queries/post.query";
 import { getCaughtErrorMessage } from "#/frontend/api/utils";
 
@@ -35,22 +27,9 @@ const dateFormatter = new Intl.DateTimeFormat("en", {
 	year: "numeric",
 });
 
-const statusColor: Record<
-	OwnPost["status"],
-	"default" | "success" | "warning"
-> = {
-	draft: "warning",
-	published: "success",
-	archived: "default",
-};
-
 type PostManagementProps = {
 	editingPostId: number | null;
 	onEdit: (post: OwnPost) => void;
-	onPostUpdated: (
-		postId: number,
-		changes: Partial<Pick<OwnPost, "status">>,
-	) => void;
 	onDeleted: (postId: number) => void;
 };
 
@@ -83,39 +62,15 @@ export function PostManagementBoundary(props: PostManagementProps) {
 function PostManagementSection({
 	editingPostId,
 	onEdit,
-	onPostUpdated,
 	onDeleted,
 }: PostManagementProps) {
 	const { data: posts } = useSuspenseQuery(currentUserPostsQueryOptions());
-	const updatePost = updatePostMutation();
 	const deletePost = deletePostMutation();
 	const [deleteTarget, setDeleteTarget] = useState<OwnPost | null>(null);
 	const [actionError, setActionError] = useState<string | null>(null);
-	const updatingPostId = updatePost.isPending
-		? updatePost.variables?.postId
-		: null;
-	const updatingStatus = updatePost.isPending
-		? updatePost.variables?.body.status
-		: null;
 	const deletingPostId = deletePost.isPending
 		? deletePost.variables?.postId
 		: null;
-
-	const changeStatus = async (post: OwnPost, status: OwnPost["status"]) => {
-		setActionError(null);
-
-		try {
-			await updatePost.mutateAsync({
-				postId: post.id,
-				body: { status },
-			});
-			onPostUpdated(post.id, { status });
-		} catch (error) {
-			setActionError(
-				getCaughtErrorMessage(error, "Unable to update this post."),
-			);
-		}
-	};
 
 	const confirmDelete = async () => {
 		if (!deleteTarget) {
@@ -142,7 +97,7 @@ function PostManagementSection({
 					<div>
 						<Card.Title>Your posts</Card.Title>
 						<Card.Description className="mt-1">
-							Edit, publish, archive, or remove your stories.
+							Edit or remove your published stories.
 						</Card.Description>
 					</div>
 					<Chip color="accent" variant="soft" size="sm">
@@ -152,7 +107,7 @@ function PostManagementSection({
 					</Chip>
 				</Card.Header>
 
-				{actionError ? (
+				{actionError && !deleteTarget ? (
 					<div className="px-6 pt-5">
 						<Alert status="danger">
 							<Alert.Indicator />
@@ -174,8 +129,7 @@ function PostManagementSection({
 								Your first story starts here
 							</h3>
 							<p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-slate-500 dark:text-slate-400">
-								Use the editor to save a draft or publish something for the
-								InkNest community.
+								Use the editor to publish something for the InkNest community.
 							</p>
 						</div>
 					) : (
@@ -184,20 +138,13 @@ function PostManagementSection({
 								<Table.Content aria-label="Your posts">
 									<Table.Header>
 										<Table.Column isRowHeader>Story</Table.Column>
-										<Table.Column>Status</Table.Column>
 										<Table.Column>Updated</Table.Column>
-										<Table.Column>Published</Table.Column>
 										<Table.Column>Actions</Table.Column>
 									</Table.Header>
 									<Table.Body>
 										{posts.map((post) => {
-											const isUpdating = updatingPostId === post.id;
 											const isDeleting = deletingPostId === post.id;
-											const isBusy = isUpdating || isDeleting;
 											const isBeingEdited = editingPostId === post.id;
-											const isScheduled =
-												post.publishedAt !== null &&
-												new Date(post.publishedAt).getTime() > Date.now();
 
 											return (
 												<Table.Row id={post.id} key={post.id}>
@@ -209,28 +156,10 @@ function PostManagementSection({
 															/{post.slug}
 														</p>
 													</Table.Cell>
-													<Table.Cell>
-														<Chip
-															color={statusColor[post.status]}
-															variant="soft"
-															size="sm"
-														>
-															<Chip.Label className="capitalize">
-																{post.status === "published" && isScheduled
-																	? "scheduled"
-																	: post.status}
-															</Chip.Label>
-														</Chip>
-													</Table.Cell>
 													<Table.Cell className="whitespace-nowrap text-sm text-slate-600 dark:text-slate-300">
 														{dateFormatter.format(new Date(post.updatedAt))}
 													</Table.Cell>
-													<Table.Cell className="whitespace-nowrap text-sm text-slate-600 dark:text-slate-300">
-														{post.publishedAt
-															? dateFormatter.format(new Date(post.publishedAt))
-															: "Not published"}
-													</Table.Cell>
-													<Table.Cell className="min-w-[27rem]">
+													<Table.Cell className="min-w-52">
 														<div className="flex flex-wrap gap-2">
 															<Button
 																type="button"
@@ -238,86 +167,17 @@ function PostManagementSection({
 																	isBeingEdited ? "primary" : "secondary"
 																}
 																size="sm"
-																isDisabled={isBusy}
+																isDisabled={isDeleting}
 																onPress={() => onEdit(post)}
 															>
 																<FilePenLine size={15} aria-hidden="true" />
 																Edit
 															</Button>
-
-															{post.status === "published" ? (
-																<Button
-																	type="button"
-																	variant="ghost"
-																	size="sm"
-																	isDisabled={isBusy || isBeingEdited}
-																	isPending={
-																		isUpdating && updatingStatus === "draft"
-																	}
-																	onPress={() =>
-																		void changeStatus(post, "draft")
-																	}
-																>
-																	<RotateCcw size={15} aria-hidden="true" />
-																	Move to draft
-																</Button>
-															) : (
-																<Button
-																	type="button"
-																	variant="ghost"
-																	size="sm"
-																	isDisabled={isBusy || isBeingEdited}
-																	isPending={
-																		isUpdating && updatingStatus === "published"
-																	}
-																	onPress={() =>
-																		void changeStatus(post, "published")
-																	}
-																>
-																	<Send size={15} aria-hidden="true" />
-																	{isScheduled ? "Schedule" : "Publish"}
-																</Button>
-															)}
-
-															{post.status === "archived" ? (
-																<Button
-																	type="button"
-																	variant="ghost"
-																	size="sm"
-																	isDisabled={isBusy || isBeingEdited}
-																	isPending={
-																		isUpdating && updatingStatus === "draft"
-																	}
-																	onPress={() =>
-																		void changeStatus(post, "draft")
-																	}
-																>
-																	<RotateCcw size={15} aria-hidden="true" />
-																	Restore
-																</Button>
-															) : (
-																<Button
-																	type="button"
-																	variant="ghost"
-																	size="sm"
-																	isDisabled={isBusy || isBeingEdited}
-																	isPending={
-																		isUpdating && updatingStatus === "archived"
-																	}
-																	onPress={() =>
-																		void changeStatus(post, "archived")
-																	}
-																>
-																	<Archive size={15} aria-hidden="true" />
-																	Archive
-																</Button>
-															)}
-
 															<Button
 																type="button"
 																variant="danger-soft"
 																size="sm"
-																isDisabled={isBusy}
+																isDisabled={isDeleting || isBeingEdited}
 																isPending={isDeleting}
 																onPress={() => {
 																	setActionError(null);
@@ -405,14 +265,14 @@ function StudioPostsPending() {
 				{["first", "second", "third"].map((id) => (
 					<div
 						key={id}
-						className="grid gap-3 border-b border-slate-100 pb-4 last:border-0 dark:border-slate-800 sm:grid-cols-[1fr_7rem_8rem]"
+						className="grid gap-3 border-b border-slate-100 pb-4 last:border-0 dark:border-slate-800 sm:grid-cols-[1fr_8rem_10rem]"
 					>
 						<div className="space-y-2">
 							<Skeleton className="h-5 w-4/5 rounded" />
 							<Skeleton className="h-3 w-2/5 rounded" />
 						</div>
-						<Skeleton className="h-6 w-20 rounded-full" />
-						<Skeleton className="h-8 w-28 rounded" />
+						<Skeleton className="h-5 w-24 rounded" />
+						<Skeleton className="h-8 w-32 rounded" />
 					</div>
 				))}
 			</Card.Content>

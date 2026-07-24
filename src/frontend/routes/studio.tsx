@@ -5,9 +5,7 @@ import { WriterStudioPage } from "#/frontend/components/pages/studio/pages/Write
 
 export const Route = createFileRoute("/studio")({
 	beforeLoad: async ({ context }) => {
-		const session = await context.queryClient.ensureQueryData(
-			sessionQueryOptions(),
-		);
+		const session = await context.queryClient.fetchQuery(sessionQueryOptions());
 
 		if (!session) {
 			throw redirect({
