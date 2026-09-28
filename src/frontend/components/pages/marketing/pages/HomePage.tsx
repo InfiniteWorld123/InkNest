@@ -1,4 +1,5 @@
 import { buttonVariants, Card, Surface } from "@heroui/react";
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import {
 	ArrowRight,
@@ -10,6 +11,7 @@ import {
 	Tags,
 	Users,
 } from "lucide-react";
+import { platformStatsQueryOptions } from "#/frontend/api/queries/stats.query";
 
 const features = [
 	{
@@ -44,13 +46,18 @@ const features = [
 	},
 ];
 
-const stats = [
-	{ value: "10k+", label: "Stories published" },
-	{ value: "48k+", label: "Active readers" },
-	{ value: "120+", label: "Topics to explore" },
-];
+const numberFormat = new Intl.NumberFormat("en-US");
 
 export function HomePage() {
+	const { data: platformStats } = useQuery(platformStatsQueryOptions());
+	const stats = platformStats
+		? [
+				{ value: platformStats.publishedPosts, label: "Stories published" },
+				{ value: platformStats.activeWriters, label: "Active writers" },
+				{ value: platformStats.topics, label: "Topics to explore" },
+			]
+		: [];
+
 	return (
 		<div>
 			{/* Hero */}
@@ -91,7 +98,7 @@ export function HomePage() {
 						{stats.map((stat) => (
 							<div key={stat.label} className="text-center">
 								<div className="text-2xl font-bold text-slate-900 sm:text-3xl dark:text-white">
-									{stat.value}
+									{numberFormat.format(stat.value)}
 								</div>
 								<div className="mt-1 text-xs text-slate-500 sm:text-sm dark:text-slate-400">
 									{stat.label}
