@@ -5,6 +5,7 @@ import { commentsRoutes } from "./modules/comments/comments.route";
 import { engagementRoutes } from "./modules/engagement/engagement.route";
 import { notificationsRoutes } from "./modules/notifications/notifications.route";
 import { postsRoutes } from "./modules/posts/posts.route";
+import { statsRoutes } from "./modules/stats/stats.route";
 import { taxonomyRoutes } from "./modules/taxonomy/taxonomy.route";
 import { usersRoutes } from "./modules/users/users.route";
 import { AppError } from "./shared/error";
@@ -12,7 +13,10 @@ import { handleError } from "./shared/error-handler";
 import { HttpStatusCode } from "./shared/http";
 import { responseError, responseOk } from "./shared/response";
 
-export const app = new Elysia({ prefix: "/api" })
+// Cloudflare Workers forbid runtime code generation (`new Function`), which
+// Elysia's ahead-of-time compiler relies on. `aot: false` switches Elysia to
+// its dynamic handler and is required to run on workerd.
+export const app = new Elysia({ prefix: "/api", aot: false })
 	.error({ AppError })
 	.onError(handleError)
 	.use(authRoutes)
@@ -22,6 +26,7 @@ export const app = new Elysia({ prefix: "/api" })
 	.use(taxonomyRoutes)
 	.use(engagementRoutes)
 	.use(notificationsRoutes)
+	.use(statsRoutes)
 	.get("/", () =>
 		responseOk({
 			data: { name: "InkNest API", baseUrl: env.BASE_URL },
