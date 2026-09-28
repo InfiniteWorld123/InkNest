@@ -8,7 +8,8 @@
   },
   "scripts": {
     "dev": "vite dev --port 3000",
-    "db:seed": "bun run src/backend/db/seed.ts",
+    "db:seed": "bun src/backend/db/seed/seed.ts",
+    "db:seed:dry": "bun src/backend/db/seed/seed.ts --dry-run",
     "generate-routes": "tsr generate",
     "build": "vite build",
     "preview": "vite preview",
