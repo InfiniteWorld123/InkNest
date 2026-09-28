@@ -61,8 +61,14 @@ export function MarketingFooter() {
 			</div>
 
 			<div className="border-t border-slate-200 dark:border-slate-800">
-				<div className="mx-auto max-w-6xl px-5 py-6 text-sm text-slate-500 dark:text-slate-500">
-					© {new Date().getFullYear()} InkNest. All rights reserved.
+				<div className="mx-auto flex max-w-6xl flex-col gap-1 px-5 py-6 text-sm text-slate-500 sm:flex-row sm:justify-between dark:text-slate-500">
+					<span>
+						© {new Date().getFullYear()} InkNest. All rights reserved.
+					</span>
+					<span>
+						Demo project by Yaman Warda – authors, posts, and comments are
+						sample data.
+					</span>
 				</div>
 			</div>
 		</footer>

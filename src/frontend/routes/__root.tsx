@@ -19,7 +19,25 @@ export const Route = createRootRouteWithContext<RouterContextType>()({
 				content: "width=device-width, initial-scale=1",
 			},
 			{
-				title: "TanStack Start Starter",
+				title: "InkNest – Demo-Blogplattform von Yaman Warda",
+			},
+			{
+				name: "description",
+				content:
+					"InkNest ist ein Demo-Projekt von Yaman Warda: eine Blogplattform mit Editor, Kommentaren, Tags und Reaktionen. Alle Inhalte sind Beispieldaten.",
+			},
+			{
+				property: "og:title",
+				content: "InkNest – Demo-Blogplattform von Yaman Warda",
+			},
+			{
+				property: "og:description",
+				content:
+					"Demo-Blogplattform mit Editor, Kommentaren, Tags und Reaktionen. Alle Inhalte sind Beispieldaten.",
+			},
+			{
+				property: "og:type",
+				content: "website",
 			},
 		],
 		links: [
