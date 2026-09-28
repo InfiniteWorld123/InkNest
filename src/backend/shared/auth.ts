@@ -4,11 +4,11 @@ import { APIError, createAuthMiddleware } from "better-auth/api";
 import { emailOTP } from "better-auth/plugins";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
 import * as v from "valibot";
+import { createGeneratedUsername } from "#/shared/username";
 import {
 	NameSchema,
 	PasswordSchema,
 } from "#/shared/validation/auth.validation";
-import { createGeneratedUsername } from "#/shared/username";
 import { db } from "../db/index";
 import * as schema from "../db/schema/tables";
 import {

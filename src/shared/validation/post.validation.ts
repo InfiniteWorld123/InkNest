@@ -1,9 +1,9 @@
 import * as v from "valibot";
+import { hasMeaningfulPostContent } from "../post-content";
 import {
 	PositiveIntegerPathParamSchema,
 	PositiveIntegerQueryStringSchema,
 } from "./common.validation";
-import { hasMeaningfulPostContent } from "../post-content";
 import { SlugSchema } from "./taxonomy.validation";
 
 export const PostTitleSchema = v.pipe(

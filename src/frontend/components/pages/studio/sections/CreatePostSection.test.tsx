@@ -1,6 +1,12 @@
 // @vitest-environment jsdom
 
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+	cleanup,
+	fireEvent,
+	render,
+	screen,
+	waitFor,
+} from "@testing-library/react";
 import { useState } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -72,9 +78,7 @@ describe("CreatePostSection", () => {
 	afterEach(cleanup);
 
 	it("clears the rich-text editor after publishing", async () => {
-		render(
-			<CreatePostSection editingPost={null} onCancelEdit={vi.fn()} />,
-		);
+		render(<CreatePostSection editingPost={null} onCancelEdit={vi.fn()} />);
 
 		const title = screen.getByPlaceholderText("A story worth sharing");
 		const editor = screen.getByLabelText("Post content");
